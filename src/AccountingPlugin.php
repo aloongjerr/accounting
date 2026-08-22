@@ -1,15 +1,15 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace AloongJerr\Accounting;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 
-class SkeletonPlugin implements Plugin
+class AccountingPlugin implements Plugin
 {
     public function getId(): string
     {
-        return 'skeleton';
+        return 'accounting';
     }
 
     public function register(Panel $panel): void
