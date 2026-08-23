@@ -109,12 +109,12 @@ class SoldTransaction extends BaseTransaction
             $debitKey = $this->forCash
                 ? AccountSystemKey::CashOnHand
                 : AccountSystemKey::CashInBank;
-            $debitAccount = $this->resolver->resolveSystemAccount($debitKey, $this->companyId);
+            $debitAccount = $this->resolver->resolveSystemAccount($debitKey, $this->tenantId);
         } elseif ($this->toEntity) {
             $debitAccount = $this->resolver->resolveEntityAccount(
                 $this->toEntity,
                 AccountSystemKey::AccountsReceivable,
-                $this->companyId,
+                $this->tenantId,
             );
         } elseif ($this->toAccount) {
             $debitAccount = $this->toAccount;
@@ -126,7 +126,7 @@ class SoldTransaction extends BaseTransaction
 
         // Resolve credit account (right side — revenue)
         $creditAccount = $this->revenueAccount
-            ?? $this->resolver->resolveSystemAccount($this->revenueKey, $this->companyId);
+            ?? $this->resolver->resolveSystemAccount($this->revenueKey, $this->tenantId);
 
         return [
             [

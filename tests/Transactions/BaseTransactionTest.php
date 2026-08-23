@@ -79,10 +79,10 @@ it('can add multiple comments', function () {
     expect($transaction->getComments())->toBe(['Invoice #123', 'Note 1', 'Note 2']);
 });
 
-it('can set company id', function () {
-    $transaction = createTestTransaction(1000)->forCompany(5);
+it('can set tenant id', function () {
+    $transaction = createTestTransaction(1000)->forTenant(5);
 
-    expect($transaction->getCompanyId())->toBe(5);
+    expect($transaction->getTenantId())->toBe(5);
 });
 
 it('can add pipes', function () {

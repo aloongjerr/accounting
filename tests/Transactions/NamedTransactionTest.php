@@ -487,10 +487,10 @@ it('supports comments on named transactions', function () {
     expect($journal->comments)->toBe(['Invoice #123', 'Receipt #456']);
 });
 
-it('supports forCompany on named transactions', function () {
+it('supports forTenant on named transactions', function () {
     $transaction = Accounting::received(500000, 'Payment')
         ->from(makeCustomer())
-        ->forCompany(5);
+        ->forTenant(5);
 
-    expect($transaction->getCompanyId())->toBe(5);
+    expect($transaction->getTenantId())->toBe(5);
 });

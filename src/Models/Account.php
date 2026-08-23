@@ -4,6 +4,7 @@ namespace AloongJerr\Accounting\Models;
 
 use AloongJerr\Accounting\Enums\AccountSystemKey;
 use AloongJerr\Accounting\Enums\AccountType;
+use AloongJerr\Accounting\Traits\HasAccountingConnection;
 use BackedEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
+ * @property int $id
  * @property string $name
  * @property string $code
  * @property AccountType $type
@@ -20,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int|null $parent_id
  * @property string|null $model_type
  * @property int|null $model_id
- * @property int|null $company_id
+ * @property int|null $tenant_id
  * @property string $currency
  * @property string|null $description
  * @property bool $is_active
@@ -29,9 +31,16 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property Collection<Account> $children
  * @property Collection<JournalEntry> $journalEntries
  * @property Model|null $model
+ *
+ * @method static Builder active()
+ * @method static Builder ofType(AccountType $type)
+ * @method static Builder systemKey(AccountSystemKey $key)
+ * @method static Builder leaf()
  */
 class Account extends Model
 {
+    use HasAccountingConnection;
+
     protected $fillable = [
         'name',
         'code',
@@ -40,7 +49,7 @@ class Account extends Model
         'parent_id',
         'model_type',
         'model_id',
-        'company_id',
+        'tenant_id',
         'currency',
         'description',
         'is_active',
@@ -51,7 +60,7 @@ class Account extends Model
         'system_key' => AccountSystemKey::class,
         'parent_id' => 'integer',
         'model_id' => 'integer',
-        'company_id' => 'integer',
+        'tenant_id' => 'integer',
         'is_active' => 'boolean',
     ];
 

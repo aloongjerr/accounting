@@ -2,13 +2,24 @@
 
 namespace AloongJerr\Accounting\Services;
 
+use AloongJerr\Accounting\AccountingConfiguration;
+use AloongJerr\Accounting\Enums\AccountSystemKey;
+use AloongJerr\Accounting\Ledger\AccountLedger;
+use AloongJerr\Accounting\Ledger\TAccount;
+use AloongJerr\Accounting\Models\Account;
+use AloongJerr\Accounting\Reports\BalanceSheet;
+use AloongJerr\Accounting\Reports\IncomeStatement;
+use AloongJerr\Accounting\Reports\TrialBalance;
 use AloongJerr\Accounting\Resolvers\AccountResolver;
+use AloongJerr\Accounting\Snapshots\SnapshotManager;
 use AloongJerr\Accounting\Transactions\AdjustmentTransaction;
 use AloongJerr\Accounting\Transactions\ManualJournal;
 use AloongJerr\Accounting\Transactions\PaidTransaction;
 use AloongJerr\Accounting\Transactions\PurchasedTransaction;
 use AloongJerr\Accounting\Transactions\ReceivedTransaction;
 use AloongJerr\Accounting\Transactions\SoldTransaction;
+use BackedEnum;
+use Closure;
 
 /**
  * Main accounting service.
@@ -28,11 +39,22 @@ use AloongJerr\Accounting\Transactions\SoldTransaction;
  */
 class AccountingService
 {
-    protected AccountResolver $resolver;
+    public function __construct(
+        protected AccountResolver $resolver,
+        protected BalanceService $balanceService,
+        protected SnapshotManager $snapshotManager,
+    ) {}
 
-    public function __construct(AccountResolver $resolver)
+    /**
+     * Configure the accounting package using a fluent interface.
+     *
+     * @param Closure(AccountingConfiguration): void $callback
+     */
+    public function configure(Closure $callback): void
     {
-        $this->resolver = $resolver;
+        $config = app(AccountingConfiguration::class);
+        $callback($config);
+        $config->apply();
     }
 
     /**
@@ -92,5 +114,89 @@ class AccountingService
     public function adjustment(int $amount, string $description = ''): AdjustmentTransaction
     {
         return new AdjustmentTransaction($amount, $description, $this->resolver);
+    }
+
+    // ── Ledger ──
+
+    /**
+     * Get the ledger for a specific account.
+     *
+     * @param  AccountSystemKey|BackedEnum|Account  $account
+     */
+    public function ledger(AccountSystemKey|BackedEnum|Account $account): AccountLedger
+    {
+        $account = $this->resolveAccount($account);
+
+        return new AccountLedger($account);
+    }
+
+    /**
+     * Get the T-account view for a specific account.
+     *
+     * @param  AccountSystemKey|BackedEnum|Account  $account
+     */
+    public function tAccount(AccountSystemKey|BackedEnum|Account $account): TAccount
+    {
+        $account = $this->resolveAccount($account);
+
+        return new TAccount($account);
+    }
+
+    // ── Reports ──
+
+    /**
+     * Create a trial balance report.
+     */
+    public function trialBalance(): TrialBalance
+    {
+        return new TrialBalance();
+    }
+
+    /**
+     * Create an income statement report.
+     */
+    public function incomeStatement(): IncomeStatement
+    {
+        return new IncomeStatement();
+    }
+
+    /**
+     * Create a balance sheet report.
+     */
+    public function balanceSheet(): BalanceSheet
+    {
+        return new BalanceSheet();
+    }
+
+    // ── Snapshot ──
+
+    /**
+     * Get the snapshot manager.
+     */
+    public function snapshot(): SnapshotManager
+    {
+        return $this->snapshotManager;
+    }
+
+    /**
+     * Get the balance service.
+     */
+    public function balanceService(): BalanceService
+    {
+        return $this->balanceService;
+    }
+
+    // ── Helpers ──
+
+    /**
+     * Resolve an account from a system key or Account model.
+     */
+    protected function resolveAccount(AccountSystemKey|BackedEnum|Account $account): Account
+    {
+        if ($account instanceof Account) {
+            return $account;
+        }
+
+        return $this->resolver->resolveSystemAccount($account);
     }
 }

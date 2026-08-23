@@ -22,16 +22,16 @@ class AccountResolver
      *
      * Used for built-in accounts like Cash, Bank, etc.
      */
-    public function resolveSystemAccount(AccountSystemKey $key, ?int $companyId = null): Account
+    public function resolveSystemAccount(AccountSystemKey $key, ?int $tenantId = null): Account
     {
         $query = Account::query()
             ->where('system_key', $key)
             ->where('type', AccountType::Account);
 
-        if ($companyId) {
-            $query->where('company_id', $companyId);
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
         } else {
-            $query->whereNull('company_id');
+            $query->whereNull('tenant_id');
         }
 
         $account = $query->first();
@@ -55,14 +55,14 @@ class AccountResolver
     public function resolveEntityAccount(
         Accountable $entity,
         AccountSystemKey $parentKey,
-        ?int $companyId = null,
+        ?int $tenantId = null,
     ): Account {
         $identifier = $entity->getAccountIdentifier();
         $modelType = get_class($entity);
         $modelId = $identifier['id'];
 
         // Find the parent account
-        $parent = $this->resolveParentAccount($parentKey, $companyId);
+        $parent = $this->resolveParentAccount($parentKey, $tenantId);
 
         // Look for existing individual account
         $account = Account::query()
@@ -82,8 +82,8 @@ class AccountResolver
             'parent_id' => $parent->getKey(),
             'model_type' => $modelType,
             'model_id' => $modelId,
-            'company_id' => $companyId,
-            'currency' => $this->resolveCurrency($companyId),
+            'tenant_id' => $tenantId,
+            'currency' => $this->resolveCurrency($tenantId),
             'is_active' => true,
         ]);
     }
@@ -91,15 +91,15 @@ class AccountResolver
     /**
      * Resolve the parent account for a given system key.
      */
-    public function resolveParentAccount(AccountSystemKey $parentKey, ?int $companyId = null): Account
+    public function resolveParentAccount(AccountSystemKey $parentKey, ?int $tenantId = null): Account
     {
         $query = Account::query()
             ->where('system_key', $parentKey);
 
-        if ($companyId) {
-            $query->where('company_id', $companyId);
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
         } else {
-            $query->whereNull('company_id');
+            $query->whereNull('tenant_id');
         }
 
         $parent = $query->first();
@@ -116,10 +116,10 @@ class AccountResolver
     /**
      * Resolve currency for the given company.
      */
-    protected function resolveCurrency(?int $companyId = null): string
+    protected function resolveCurrency(?int $tenantId = null): string
     {
-        if ($companyId) {
-            // Future: fetch from companies table
+        if ($tenantId) {
+            // Future: fetch from tenants table
         }
 
         return Accounting::config('currency', 'USD');

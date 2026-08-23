@@ -7,20 +7,20 @@ use AloongJerr\Accounting\Accounting;
 trait HasCurrency
 {
     /**
-     * Resolve the currency for the given company or fallback to config default.
+     * Resolve the currency for the given tenant or fallback to config default.
      *
-     * Future-ready: when company_id is present, fetch currency from companies table.
+     * Future-ready: when tenant_id is present, fetch currency from tenants table.
      * Currently returns the default currency from config.
      */
-    protected function resolveCurrency(?int $companyId = null): string
+    protected function resolveCurrency(?int $tenantId = null): string
     {
-        if ($companyId) {
-            $companyClass = "\App\Models\Company";
-//             Future: fetch from companies table
-             if (class_exists($companyClass)) {
-                 $company = $companyClass::query()->find($companyId);
-                 if ($company && $company->currency) {
-                     return $company->currency;
+        if ($tenantId) {
+            $tenantClass = "\App\Models\Tenant";
+//             Future: fetch from tenants table
+             if (class_exists($tenantClass)) {
+                 $tenant = $tenantClass::query()->find($tenantId);
+                 if ($tenant && $tenant->currency) {
+                     return $tenant->currency;
                  }
              }
         }

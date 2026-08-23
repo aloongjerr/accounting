@@ -15,10 +15,15 @@ return new class extends Migration
             $table->unsignedBigInteger('debit')->default(0);
             $table->unsignedBigInteger('credit')->default(0);
             $table->text('description')->nullable();
+            $table->timestamp('deleted_at')->nullable(); // for soft delete when immutable=false
             $table->timestamps();
 
             $table->index('journal_id');
             $table->index('account_id');
+            
+            // Composite index for balance calculations with joins
+            // Queries often filter by account_id and join with journals
+            $table->index(['account_id', 'journal_id'], 'journal_entries_account_journal_idx');
         });
     }
 

@@ -97,4 +97,10 @@ return [
         'reversed' => 'Diterbalikkan',
     ],
 
+    // ── Mesej Pengecualian ──
+    'exceptions' => [
+        'cannot_delete' => 'Tidak dibenarkan memadam :model. Sila gunakan void() atau buat entri pelarasan.',
+        'cannot_update_posted' => 'Tidak dibenarkan mengemaskini jurnal yang telah dipost. sila buat entri pelarasan.',
+    ],
+
 ];

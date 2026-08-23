@@ -94,7 +94,7 @@ class PaidTransaction extends BaseTransaction
             $debitAccount = $this->resolver->resolveEntityAccount(
                 $this->toEntity,
                 AccountSystemKey::AccountsPayable,
-                $this->companyId,
+                $this->tenantId,
             );
         } elseif ($this->toAccount) {
             $debitAccount = $this->toAccount;
@@ -106,7 +106,7 @@ class PaidTransaction extends BaseTransaction
 
         // Resolve credit account (right side — where money comes from)
         $creditAccount = $this->fromAccount
-            ?? $this->resolver->resolveSystemAccount($this->fromSystemKey, $this->companyId);
+            ?? $this->resolver->resolveSystemAccount($this->fromSystemKey, $this->tenantId);
 
         return [
             [

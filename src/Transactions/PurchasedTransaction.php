@@ -106,19 +106,19 @@ class PurchasedTransaction extends BaseTransaction
     {
         // Resolve debit account (left side — what was purchased)
         $debitAccount = $this->expenseAccount
-            ?? $this->resolver->resolveSystemAccount($this->expenseKey, $this->companyId);
+            ?? $this->resolver->resolveSystemAccount($this->expenseKey, $this->tenantId);
 
         // Resolve credit account (right side — who/what is paying)
         if ($this->forCash || $this->forBank) {
             $creditKey = $this->forCash
                 ? AccountSystemKey::CashOnHand
                 : AccountSystemKey::CashInBank;
-            $creditAccount = $this->resolver->resolveSystemAccount($creditKey, $this->companyId);
+            $creditAccount = $this->resolver->resolveSystemAccount($creditKey, $this->tenantId);
         } elseif ($this->fromEntity) {
             $creditAccount = $this->resolver->resolveEntityAccount(
                 $this->fromEntity,
                 AccountSystemKey::AccountsPayable,
-                $this->companyId,
+                $this->tenantId,
             );
         } elseif ($this->fromAccount) {
             $creditAccount = $this->fromAccount;

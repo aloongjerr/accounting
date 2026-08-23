@@ -97,4 +97,10 @@ return [
         'reversed' => 'Reversed',
     ],
 
+    // ── Exception Messages ──
+    'exceptions' => [
+        'cannot_delete' => 'Cannot delete :model. Use void() or create an adjustment entry instead.',
+        'cannot_update_posted' => 'Cannot update posted journals. Create an adjustment entry instead.',
+    ],
+
 ];

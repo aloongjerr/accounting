@@ -91,14 +91,14 @@ class ReceivedTransaction extends BaseTransaction
     {
         // Resolve debit account (left side — where money goes)
         $debitAccount = $this->toAccount
-            ?? $this->resolver->resolveSystemAccount($this->toSystemKey, $this->companyId);
+            ?? $this->resolver->resolveSystemAccount($this->toSystemKey, $this->tenantId);
 
         // Resolve credit account (right side — where money comes from)
         if ($this->fromEntity) {
             $creditAccount = $this->resolver->resolveEntityAccount(
                 $this->fromEntity,
                 AccountSystemKey::AccountsReceivable,
-                $this->companyId,
+                $this->tenantId,
             );
         } elseif ($this->fromAccount) {
             $creditAccount = $this->fromAccount;

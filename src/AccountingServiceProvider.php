@@ -3,13 +3,17 @@
 namespace AloongJerr\Accounting;
 
 use AloongJerr\Accounting\Commands\AccountingCommand;
+use AloongJerr\Accounting\Commands\GenerateSnapshotsCommand;
 use AloongJerr\Accounting\Contracts\HasAccountIdentity;
 use AloongJerr\Accounting\Database\Seeders\ChartOfAccountsSeeder;
 use AloongJerr\Accounting\Resolvers\AccountResolver;
 use AloongJerr\Accounting\Services\AccountingService;
+use AloongJerr\Accounting\Services\BalanceService;
+use AloongJerr\Accounting\Snapshots\SnapshotManager;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Filesystem\Filesystem;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -20,6 +24,7 @@ class AccountingServiceProvider extends PackageServiceProvider
     public static string $name = 'accounting';
 
     public static string $viewNamespace = 'accounting';
+
     public static string $packageName = 'aloongjerr/accounting';
 
     public function configurePackage(Package $package): void
@@ -64,9 +69,16 @@ class AccountingServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         $this->app->singleton(AccountResolver::class);
+        $this->app->singleton(BalanceService::class);
+        $this->app->singleton(SnapshotManager::class);
+        $this->app->singleton(AccountingConfiguration::class);
 
         $this->app->singleton(AccountingService::class, function ($app) {
-            return new AccountingService($app->make(AccountResolver::class));
+            return new AccountingService(
+                $app->make(AccountResolver::class),
+                $app->make(BalanceService::class),
+                $app->make(SnapshotManager::class),
+            );
         });
     }
 
@@ -88,15 +100,33 @@ class AccountingServiceProvider extends PackageServiceProvider
         // Icon Registration
         FilamentIcon::register($this->getIcons());
 
-        // Handle Stubs
         if (app()->runningInConsole()) {
+            // Handle Stubs
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
                 $this->publishes([
                     $file->getRealPath() => base_path("stubs/accounting/{$file->getFilename()}"),
                 ], 'accounting-stubs');
             }
-        }
 
+            // Register scheduled tasks only when snapshot driver is 'scheduled'
+            if (Accounting::config('snapshot.driver') === 'scheduled') {
+                $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
+                    $config = app(AccountingConfiguration::class);
+                    $scheduleCallback = $config->getScheduleCallback();
+                    
+                    if ($scheduleCallback !== null) {
+                        // User has configured custom schedule - pass $schedule directly
+                        $scheduleCallback($schedule);
+                    } else {
+                        // Default schedule: use time from config (default 02:00)
+                        $scheduleTime = Accounting::config('snapshot.schedule_time', '02:00');
+                        $schedule->command('accounting:generate-snapshots')
+                            ->dailyAt($scheduleTime)
+                            ->description('Generate daily account balance snapshots');
+                    }
+                });
+            }
+        }
     }
 
     protected function getAssetPackageName(): ?string
@@ -123,6 +153,7 @@ class AccountingServiceProvider extends PackageServiceProvider
     {
         return [
             AccountingCommand::class,
+            GenerateSnapshotsCommand::class,
         ];
     }
 
@@ -159,6 +190,7 @@ class AccountingServiceProvider extends PackageServiceProvider
             'create_accounts_table',
             'create_journals_table',
             'create_journal_entries_table',
+            'create_account_snapshots_table',
         ];
     }
 

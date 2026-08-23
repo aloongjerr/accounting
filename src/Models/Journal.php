@@ -3,30 +3,45 @@
 namespace AloongJerr\Accounting\Models;
 
 use AloongJerr\Accounting\Enums\JournalStatus;
+use AloongJerr\Accounting\Traits\HasAccountingConnection;
 use AloongJerr\Accounting\Traits\HasCurrency;
+use AloongJerr\Accounting\Traits\ImmutableAccounting;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
+ * @property int $id
  * @property Carbon $date
  * @property string $description
  * @property string|null $reference_type
  * @property int|null $reference_id
  * @property JournalStatus $status
- * @property int|null $company_id
+ * @property int|null $tenant_id
  * @property string|null $currency
  * @property array|null $comments
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  *
  * @property Collection<JournalEntry> $entries
  * @property Model|null $reference
+ *
+ * @method static Builder posted()
+ * @method static Builder draft()
+ * @method static Builder forTenant(?int $tenantId)
+ * @method static Builder dateBetween(?string $startDate, ?string $endDate)
  */
 class Journal extends Model
 {
+    use HasAccountingConnection;
     use HasCurrency;
+    use ImmutableAccounting; // Handles both deletion and update protection
+    use SoftDeletes; // Enable soft deletes when immutable=false
 
     protected $fillable = [
         'date',
@@ -34,7 +49,7 @@ class Journal extends Model
         'reference_type',
         'reference_id',
         'status',
-        'company_id',
+        'tenant_id',
         'currency',
         'comments',
     ];
@@ -43,7 +58,7 @@ class Journal extends Model
         'date' => 'date',
         'status' => JournalStatus::class,
         'reference_id' => 'integer',
-        'company_id' => 'integer',
+        'tenant_id' => 'integer',
         'comments' => 'array',
     ];
 
@@ -71,9 +86,9 @@ class Journal extends Model
         return $query->where('status', JournalStatus::Draft);
     }
 
-    public function scopeForCompany(Builder $query, ?int $companyId): Builder
+    public function scopeForTenant(Builder $query, ?int $tenantId): Builder
     {
-        return $query->where('company_id', $companyId);
+        return $query->where('tenant_id', $tenantId);
     }
 
     public function scopeDateBetween(Builder $query, ?string $startDate, ?string $endDate): Builder

@@ -268,11 +268,11 @@ it('scopes to draft journals', function () {
     expect(Journal::query()->draft()->count())->toBe(1);
 });
 
-it('scopes to company', function () {
-    Journal::query()->create(['date' => now(), 'description' => 'Company 1', 'status' => JournalStatus::Draft, 'company_id' => 1]);
-    Journal::query()->create(['date' => now(), 'description' => 'Company 2', 'status' => JournalStatus::Draft, 'company_id' => 2]);
+it('scopes to tenant', function () {
+    Journal::query()->create(['date' => now(), 'description' => 'Tenant 1', 'status' => JournalStatus::Draft, 'tenant_id' => 1]);
+    Journal::query()->create(['date' => now(), 'description' => 'Tenant 2', 'status' => JournalStatus::Draft, 'tenant_id' => 2]);
 
-    expect(Journal::query()->forCompany(1)->count())->toBe(1);
+    expect(Journal::query()->forTenant(1)->count())->toBe(1);
 });
 
 it('scopes by date range', function () {

@@ -35,7 +35,7 @@ abstract class BaseTransaction
 
     protected ?int $referenceId = null;
 
-    protected ?int $companyId = null;
+    protected ?int $tenantId = null;
 
     /** @var array<class-string<AccountingPipe>> */
     protected array $pipes = [];
@@ -94,11 +94,11 @@ abstract class BaseTransaction
     }
 
     /**
-     * Set the company ID for multi-company support.
+     * Set the tenant ID for multi-tenant support.
      */
-    public function forCompany(?int $companyId): static
+    public function forTenant(?int $tenantId): static
     {
-        $this->companyId = $companyId;
+        $this->tenantId = $tenantId;
 
         return $this;
     }
@@ -160,7 +160,7 @@ abstract class BaseTransaction
                 'reference_type' => $this->referenceType,
                 'reference_id' => $this->referenceId,
                 'status' => \AloongJerr\Accounting\Enums\JournalStatus::Draft,
-                'company_id' => $this->companyId,
+                'tenant_id' => $this->tenantId,
                 'currency' => $this->resolveCurrency(),
                 'comments' => ! empty($this->comments) ? $this->comments : null,
             ]);
@@ -189,8 +189,8 @@ abstract class BaseTransaction
      */
     protected function resolveCurrency(): string
     {
-        if ($this->companyId) {
-            // Future: fetch from companies table
+        if ($this->tenantId) {
+            // Future: fetch from tenants table
         }
 
         return Accounting::config('currency', 'USD');
@@ -231,11 +231,11 @@ abstract class BaseTransaction
     }
 
     /**
-     * Get the company ID.
+     * Get the tenant ID.
      */
-    public function getCompanyId(): ?int
+    public function getTenantId(): ?int
     {
-        return $this->companyId;
+        return $this->tenantId;
     }
 
     /**

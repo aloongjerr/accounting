@@ -2,19 +2,30 @@
 
 namespace AloongJerr\Accounting;
 
-use Illuminate\Config\Repository;
-use Illuminate\Foundation\Application;
+use Closure;
 
 class Accounting {
     /**
      * Get a configuration value from the accounting package.
      *
-     * @param 'currency'|'fiscal_year'|'fiscal_year.start_month'|'fiscal_year.start_day'|'fiscal_year.end_month'|'fiscal_year.end_day'|'account_keys' $key
+     * @param 'connection'|'currency'|'fiscal_year'|'fiscal_year.start_month'|'fiscal_year.start_day'|'fiscal_year.end_month'|'fiscal_year.end_day'|'account_keys'|'snapshot'|'snapshot.driver'|'snapshot.schedule_time' $key
      * @param mixed|null $default
-     * @return Repository|Application|object|mixed|null
+     * @return mixed
      */
     public static function config(string $key, mixed $default = null): mixed
     {
         return config("accounting.{$key}", $default);
+    }
+
+    /**
+     * Configure the accounting package using a fluent interface.
+     *
+     * @param Closure(AccountingConfiguration): void $callback
+     */
+    public static function configure(Closure $callback): void
+    {
+        $config = app(AccountingConfiguration::class);
+        $callback($config);
+        $config->apply();
     }
 }
