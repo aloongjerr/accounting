@@ -1,8 +1,19 @@
 <?php
 
+use AloongJerr\Accounting\Database\Seeders\ChartOfAccountsSeeder;
 use AloongJerr\Accounting\Facades\Accounting;
 use AloongJerr\Accounting\Resolvers\AccountResolver;
 use AloongJerr\Accounting\Services\AccountingService;
+use AloongJerr\Accounting\Transactions\AdjustmentTransaction;
+use AloongJerr\Accounting\Transactions\ManualJournal;
+use AloongJerr\Accounting\Transactions\PaidTransaction;
+use AloongJerr\Accounting\Transactions\PurchasedTransaction;
+use AloongJerr\Accounting\Transactions\ReceivedTransaction;
+use AloongJerr\Accounting\Transactions\SoldTransaction;
+
+beforeEach(function () {
+    $this->seed(ChartOfAccountsSeeder::class);
+});
 
 it('resolves accounting service from container', function () {
     $service = app(AccountingService::class);
@@ -27,22 +38,26 @@ it('facade resolves to accounting service', function () {
     expect(Accounting::resolver())->toBeInstanceOf(AccountResolver::class);
 });
 
-it('throws bad method call for unimplemented transaction types', function () {
-    Accounting::received(5000);
-})->throws(\BadMethodCallException::class, 'not yet implemented');
+it('returns ManualJournal from journal()', function () {
+    expect(Accounting::journal('test'))->toBeInstanceOf(ManualJournal::class);
+});
 
-it('throws bad method call for paid', function () {
-    Accounting::paid(5000);
-})->throws(\BadMethodCallException::class, 'not yet implemented');
+it('returns ReceivedTransaction from received()', function () {
+    expect(Accounting::received(5000, 'test'))->toBeInstanceOf(ReceivedTransaction::class);
+});
 
-it('throws bad method call for sold', function () {
-    Accounting::sold(5000);
-})->throws(\BadMethodCallException::class, 'not yet implemented');
+it('returns PaidTransaction from paid()', function () {
+    expect(Accounting::paid(5000, 'test'))->toBeInstanceOf(PaidTransaction::class);
+});
 
-it('throws bad method call for purchased', function () {
-    Accounting::purchased(5000);
-})->throws(\BadMethodCallException::class, 'not yet implemented');
+it('returns SoldTransaction from sold()', function () {
+    expect(Accounting::sold(5000, 'test'))->toBeInstanceOf(SoldTransaction::class);
+});
 
-it('throws bad method call for adjustment', function () {
-    Accounting::adjustment(5000);
-})->throws(\BadMethodCallException::class, 'not yet implemented');
+it('returns PurchasedTransaction from purchased()', function () {
+    expect(Accounting::purchased(5000, 'test'))->toBeInstanceOf(PurchasedTransaction::class);
+});
+
+it('returns AdjustmentTransaction from adjustment()', function () {
+    expect(Accounting::adjustment(5000, 'test'))->toBeInstanceOf(AdjustmentTransaction::class);
+});

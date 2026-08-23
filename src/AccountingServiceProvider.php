@@ -167,7 +167,7 @@ class AccountingServiceProvider extends PackageServiceProvider
      */
     protected function validateRegisteredEnums(): void
     {
-        $enums = config('accounting.account_keys', []);
+        $enums = Accounting::config('account_keys', []);
 
         foreach ($enums as $enumClass) {
             if (! is_subclass_of($enumClass, HasAccountIdentity::class)) {

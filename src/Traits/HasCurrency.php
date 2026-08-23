@@ -2,6 +2,8 @@
 
 namespace AloongJerr\Accounting\Traits;
 
+use AloongJerr\Accounting\Accounting;
+
 trait HasCurrency
 {
     /**
@@ -23,6 +25,6 @@ trait HasCurrency
              }
         }
 
-        return config('accounting.currency', 'USD');
+        return Accounting::config('currency', 'USD');
     }
 }

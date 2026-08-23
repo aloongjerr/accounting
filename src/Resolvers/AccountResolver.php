@@ -2,6 +2,7 @@
 
 namespace AloongJerr\Accounting\Resolvers;
 
+use AloongJerr\Accounting\Accounting;
 use AloongJerr\Accounting\Contracts\Accountable;
 use AloongJerr\Accounting\Enums\AccountSystemKey;
 use AloongJerr\Accounting\Enums\AccountType;
@@ -121,6 +122,6 @@ class AccountResolver
             // Future: fetch from companies table
         }
 
-        return config('accounting.currency', 'USD');
+        return Accounting::config('currency', 'USD');
     }
 }

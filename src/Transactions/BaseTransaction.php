@@ -2,6 +2,8 @@
 
 namespace AloongJerr\Accounting\Transactions;
 
+use AloongJerr\Accounting\Accounting;
+use AloongJerr\Accounting\Contracts\AccountingPipe;
 use AloongJerr\Accounting\Models\Journal;
 use AloongJerr\Accounting\Models\JournalEntry;
 use AloongJerr\Accounting\Resolvers\AccountResolver;
@@ -191,7 +193,7 @@ abstract class BaseTransaction
             // Future: fetch from companies table
         }
 
-        return config('accounting.currency', 'USD');
+        return Accounting::config('currency', 'USD');
     }
 
     /**

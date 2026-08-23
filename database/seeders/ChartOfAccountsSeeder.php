@@ -2,6 +2,7 @@
 
 namespace AloongJerr\Accounting\Database\Seeders;
 
+use AloongJerr\Accounting\Accounting;
 use AloongJerr\Accounting\Contracts\HasAccountIdentity;
 use AloongJerr\Accounting\Enums\AccountType;
 use AloongJerr\Accounting\Models\Account;
@@ -14,7 +15,7 @@ class ChartOfAccountsSeeder extends Seeder
 
     public function run(): void
     {
-        $enums = config('accounting.account_keys', []);
+        $enums = Accounting::config('account_keys', []);
 
         foreach ($enums as $enumClass) {
             $this->validateEnum($enumClass);

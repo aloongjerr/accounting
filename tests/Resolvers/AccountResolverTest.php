@@ -52,7 +52,7 @@ it('throws when parent account not found', function () {
 it('resolves entity account and creates if not exists', function () {
     $entity = new class implements Accountable
     {
-        public function getAccountKeys(): AccountSystemKey|array
+        public function getAccountKeys(): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
         {
             return AccountSystemKey::AccountsReceivable;
         }
@@ -76,7 +76,7 @@ it('resolves entity account and creates if not exists', function () {
 it('returns existing entity account on second resolve', function () {
     $entity = new class implements Accountable
     {
-        public function getAccountKeys(): AccountSystemKey|array
+        public function getAccountKeys(): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
         {
             return AccountSystemKey::AccountsReceivable;
         }
@@ -96,7 +96,7 @@ it('returns existing entity account on second resolve', function () {
 it('creates separate accounts for same entity under different parents', function () {
     $entity = new class implements Accountable
     {
-        public function getAccountKeys(): AccountSystemKey|array
+        public function getAccountKeys(): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
         {
             return [AccountSystemKey::AccountsReceivable, AccountSystemKey::AccountsPayable];
         }
