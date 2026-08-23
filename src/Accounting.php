@@ -9,7 +9,7 @@ class Accounting {
     /**
      * Get a configuration value from the accounting package.
      *
-     * @param 'currency'|'fiscal_year'|'fiscal_year.start_month'|'fiscal_year.end_month'|'account_keys' $key
+     * @param 'currency'|'fiscal_year'|'fiscal_year.start_month'|'fiscal_year.start_day'|'fiscal_year.end_month'|'fiscal_year.end_day'|'account_keys' $key
      * @param mixed|null $default
      * @return Repository|Application|object|mixed|null
      */
