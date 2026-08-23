@@ -4,11 +4,32 @@ namespace AloongJerr\Accounting\Models;
 
 use AloongJerr\Accounting\Enums\AccountSystemKey;
 use AloongJerr\Accounting\Enums\AccountType;
+use BackedEnum;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @property string $name
+ * @property string $code
+ * @property AccountType $type
+ * @property AccountSystemKey|BackedEnum $system_key
+ * @property int|null $parent_id
+ * @property string|null $model_type
+ * @property int|null $model_id
+ * @property int|null $company_id
+ * @property string $currency
+ * @property string|null $description
+ * @property bool $is_active
+ *
+ * @property Account|null $parent
+ * @property Collection<Account> $children
+ * @property Collection<JournalEntry> $journalEntries
+ * @property Model|null $model
+ */
 class Account extends Model
 {
     protected $fillable = [
@@ -58,38 +79,47 @@ class Account extends Model
 
     // ── Scopes ──
 
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
 
-    public function scopeOfType($query, AccountType $type)
+    public function scopeOfType(Builder $query, AccountType $type): Builder
     {
         return $query->where('type', $type);
     }
 
-    public function scopeSystemKey($query, AccountSystemKey $key)
+    public function scopeSystemKey(Builder $query, AccountSystemKey $key): Builder
     {
         return $query->where('system_key', $key);
     }
 
-    public function scopeLeaf($query)
+    public function scopeLeaf(Builder $query): Builder
     {
         return $query->where('type', AccountType::Account);
     }
 
     // ── Helpers ──
 
+    /**
+     * Check if this is a leaf (transactable) account.
+     */
     public function isLeaf(): bool
     {
         return $this->type === AccountType::Account;
     }
 
+    /**
+     * Check if this is a group account.
+     */
     public function isGroup(): bool
     {
         return $this->type === AccountType::Group;
     }
 
+    /**
+     * Check if this is a category account.
+     */
     public function isCategory(): bool
     {
         return $this->type === AccountType::Category;

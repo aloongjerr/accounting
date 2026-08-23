@@ -4,10 +4,26 @@ namespace AloongJerr\Accounting\Models;
 
 use AloongJerr\Accounting\Enums\JournalStatus;
 use AloongJerr\Accounting\Traits\HasCurrency;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon $date
+ * @property string $description
+ * @property string|null $reference_type
+ * @property int|null $reference_id
+ * @property JournalStatus $status
+ * @property int|null $company_id
+ * @property string|null $currency
+ * @property array|null $comments
+ *
+ * @property Collection<JournalEntry> $entries
+ * @property Model|null $reference
+ */
 class Journal extends Model
 {
     use HasCurrency;
@@ -45,22 +61,22 @@ class Journal extends Model
 
     // ── Scopes ──
 
-    public function scopePosted($query)
+    public function scopePosted(Builder $query): Builder
     {
         return $query->where('status', JournalStatus::Posted);
     }
 
-    public function scopeDraft($query)
+    public function scopeDraft(Builder $query): Builder
     {
         return $query->where('status', JournalStatus::Draft);
     }
 
-    public function scopeForCompany($query, ?int $companyId)
+    public function scopeForCompany(Builder $query, ?int $companyId): Builder
     {
         return $query->where('company_id', $companyId);
     }
 
-    public function scopeDateBetween($query, ?string $startDate, ?string $endDate)
+    public function scopeDateBetween(Builder $query, ?string $startDate, ?string $endDate): Builder
     {
         if ($startDate) {
             $query->where('date', '>=', $startDate);

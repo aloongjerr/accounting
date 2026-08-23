@@ -5,6 +5,16 @@ namespace AloongJerr\Accounting\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $journal_id
+ * @property int $account_id
+ * @property int $debit
+ * @property int $credit
+ * @property string|null $description
+ *
+ * @property Journal $journal
+ * @property Account $account
+ */
 class JournalEntry extends Model
 {
     protected $fillable = [
