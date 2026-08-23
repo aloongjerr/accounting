@@ -3,6 +3,10 @@
 namespace AloongJerr\Accounting;
 
 use AloongJerr\Accounting\Commands\AccountingCommand;
+use AloongJerr\Accounting\Contracts\HasAccountIdentity;
+use AloongJerr\Accounting\Database\Seeders\ChartOfAccountsSeeder;
+use AloongJerr\Accounting\Resolvers\AccountResolver;
+use AloongJerr\Accounting\Services\AccountingService;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
@@ -32,7 +36,10 @@ class AccountingServiceProvider extends PackageServiceProvider
                     ->publishConfigFile()
                     ->publishMigrations()
                     ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub(static::$packageName);
+                    ->askToStarRepoOnGitHub(static::$packageName)
+                    ->endWith(function () use ($command) {
+                        $command->call('db:seed', ['--class' => ChartOfAccountsSeeder::class]);
+                    });
             });
 
         $configFileName = $package->shortName();
@@ -56,10 +63,17 @@ class AccountingServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->singleton(AccountResolver::class);
+
+        $this->app->singleton(AccountingService::class, function ($app) {
+            return new AccountingService($app->make(AccountResolver::class));
+        });
     }
 
     public function packageBooted(): void
     {
+        $this->validateRegisteredEnums();
+
         // Asset Registration
         FilamentAsset::register(
             $this->getAssets(),
@@ -142,7 +156,25 @@ class AccountingServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-//            'create_accounting_table',
+            'create_accounts_table',
+            'create_journals_table',
+            'create_journal_entries_table',
         ];
+    }
+
+    /**
+     * Validate that all registered account key enums implement HasAccountIdentity.
+     */
+    protected function validateRegisteredEnums(): void
+    {
+        $enums = config('accounting.account_keys', []);
+
+        foreach ($enums as $enumClass) {
+            if (! is_subclass_of($enumClass, HasAccountIdentity::class)) {
+                throw new \InvalidArgumentException(
+                    "Account key enum [{$enumClass}] must implement [" . HasAccountIdentity::class . '].'
+                );
+            }
+        }
     }
 }

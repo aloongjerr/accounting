@@ -38,7 +38,8 @@
     "autoload": {
         "psr-4": {
             "AloongJerr\\Accounting\\": "src/",
-            "AloongJerr\\Accounting\\Database\\Factories\\": "database/factories/"
+            "AloongJerr\\Accounting\\Database\\Factories\\": "database/factories/",
+            "AloongJerr\\Accounting\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
@@ -49,7 +50,7 @@
     "scripts": {
         "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
         "lint": "pint",
-        "test": "pest",
+        "test": "pest --no-coverage",
         "test:lint": "pint --test"
     },
     "extra": {

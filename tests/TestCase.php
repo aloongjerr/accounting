@@ -14,6 +14,7 @@ use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\Concerns\WithWorkbench;
@@ -30,9 +31,47 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
+        $this->copyMigrationStubs();
+
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'AloongJerr\\Accounting\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
+    }
+
+    protected function tearDown(): void
+    {
+        $this->cleanupMigrationStubs();
+
+        parent::tearDown();
+    }
+
+    /**
+     * Copy migration stubs to a temp directory as .php files for testing.
+     */
+    protected function copyMigrationStubs(): void
+    {
+        $stubPath = __DIR__ . '/../database/migrations';
+        $tempPath = __DIR__ . '/database/migrations';
+
+        if (! is_dir($tempPath)) {
+            mkdir($tempPath, 0755, true);
+        }
+
+        foreach (glob($stubPath . '/*.php.stub') as $file) {
+            file_put_contents($tempPath . '/' . basename($file, '.stub'), file_get_contents($file));
+        }
+    }
+
+    /**
+     * Clean up temporary migration files.
+     */
+    protected function cleanupMigrationStubs(): void
+    {
+        $tempPath = __DIR__ . '/database/migrations';
+
+        if (is_dir($tempPath)) {
+            (new Filesystem)->deleteDirectory($tempPath);
+        }
     }
 
     protected function getPackageProviders($app)
@@ -66,6 +105,6 @@ class TestCase extends Orchestra
 
     protected function defineDatabaseMigrations(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
     }
 }
