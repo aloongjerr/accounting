@@ -23,12 +23,12 @@ function makeCustomer(int $id = 1, string $name = 'Test Customer'): Accountable
     {
         public function __construct(protected int $id, protected string $name) {}
 
-        public function getAccountKeys(): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
+        public function getAccountKeys(array $data = []): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
         {
             return AccountSystemKey::AccountsReceivable;
         }
 
-        public function getAccountIdentifier(): array
+        public function getAccountIdentifier(array $data = []): array
         {
             return ['id' => $this->id, 'name' => $this->name];
         }
@@ -41,12 +41,12 @@ function makeSupplier(int $id = 1, string $name = 'Test Supplier'): Accountable
     {
         public function __construct(protected int $id, protected string $name) {}
 
-        public function getAccountKeys(): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
+        public function getAccountKeys(array $data = []): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
         {
             return AccountSystemKey::AccountsPayable;
         }
 
-        public function getAccountIdentifier(): array
+        public function getAccountIdentifier(array $data = []): array
         {
             return ['id' => $this->id, 'name' => $this->name];
         }

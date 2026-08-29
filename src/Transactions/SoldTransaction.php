@@ -115,6 +115,7 @@ class SoldTransaction extends BaseTransaction
                 $this->toEntity,
                 AccountSystemKey::AccountsReceivable,
                 $this->tenantId,
+                $this->data,
             );
         } elseif ($this->toAccount) {
             $debitAccount = $this->toAccount;

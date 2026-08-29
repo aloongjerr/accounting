@@ -40,6 +40,8 @@ abstract class BaseTransaction
     /** @var array<class-string<AccountingPipe>> */
     protected array $pipes = [];
 
+    protected array $data = [];
+
     protected AccountResolver $resolver;
 
     public function __construct(int $amount, string $description = '', ?AccountResolver $resolver = null)
@@ -99,6 +101,16 @@ abstract class BaseTransaction
     public function forTenant(?int $tenantId): static
     {
         $this->tenantId = $tenantId;
+
+        return $this;
+    }
+
+    /**
+     * Attach additional data for account resolution and model callbacks.
+     */
+    public function withData(array $data): static
+    {
+        $this->data = array_merge($this->data, $data);
 
         return $this;
     }
@@ -236,6 +248,14 @@ abstract class BaseTransaction
     public function getTenantId(): ?int
     {
         return $this->tenantId;
+    }
+
+    /**
+     * Get the additional data.
+     */
+    public function getData(): array
+    {
+        return $this->data;
     }
 
     /**

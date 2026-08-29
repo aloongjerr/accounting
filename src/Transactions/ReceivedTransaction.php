@@ -99,6 +99,7 @@ class ReceivedTransaction extends BaseTransaction
                 $this->fromEntity,
                 AccountSystemKey::AccountsReceivable,
                 $this->tenantId,
+                $this->data,
             );
         } elseif ($this->fromAccount) {
             $creditAccount = $this->fromAccount;

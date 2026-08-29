@@ -51,13 +51,16 @@ class AccountResolver
      * Finds existing account or creates a new one under the given parent key.
      * This handles the dual-role entity scenario — the same model can have
      * separate accounts under different parents (e.g., AR and AP).
+     *
+     * @param  array<string, mixed>  $data  Additional context data passed to Accountable methods
      */
     public function resolveEntityAccount(
         Accountable $entity,
         AccountSystemKey $parentKey,
         ?int $tenantId = null,
+        array $data = [],
     ): Account {
-        $identifier = $entity->getAccountIdentifier();
+        $identifier = $entity->getAccountIdentifier($data);
         $modelType = get_class($entity);
         $modelId = $identifier['id'];
 

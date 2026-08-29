@@ -18,6 +18,7 @@ use AloongJerr\Accounting\Transactions\PaidTransaction;
 use AloongJerr\Accounting\Transactions\PurchasedTransaction;
 use AloongJerr\Accounting\Transactions\ReceivedTransaction;
 use AloongJerr\Accounting\Transactions\SoldTransaction;
+use AloongJerr\Accounting\Transactions\TransferTransaction;
 use BackedEnum;
 use Closure;
 
@@ -32,6 +33,7 @@ use Closure;
  *   Accounting::paid(300000, 'Supplies')->to($supplier)->fromCash()->commit();
  *   Accounting::sold(150000, 'Sale')->to($customer)->commit();
  *   Accounting::purchased(200000, 'Equipment')->forExpense($key)->from($supplier)->commit();
+ *   Accounting::transfer(500000, 'Cash to bank')->fromCash()->toBank()->commit();
  *   Accounting::adjustment(50000, 'Correction')->debit($a)->credit($b)->commit();
  *
  * Generic (escape hatch):
@@ -106,6 +108,14 @@ class AccountingService
     public function purchased(int $amount, string $description = ''): PurchasedTransaction
     {
         return new PurchasedTransaction($amount, $description, $this->resolver);
+    }
+
+    /**
+     * Create a transfer transaction (move money between own accounts).
+     */
+    public function transfer(int $amount, string $description = ''): TransferTransaction
+    {
+        return new TransferTransaction($amount, $description, $this->resolver);
     }
 
     /**

@@ -119,6 +119,7 @@ class PurchasedTransaction extends BaseTransaction
                 $this->fromEntity,
                 AccountSystemKey::AccountsPayable,
                 $this->tenantId,
+                $this->data,
             );
         } elseif ($this->fromAccount) {
             $creditAccount = $this->fromAccount;

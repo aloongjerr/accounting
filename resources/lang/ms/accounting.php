@@ -103,4 +103,151 @@ return [
         'cannot_update_posted' => 'Tidak dibenarkan mengemaskini jurnal yang telah dipost. sila buat entri pelarasan.',
     ],
 
+    // ── Navigasi ──
+    'navigation' => [
+        'finance' => 'Kewangan',
+    ],
+
+    // ── Transaksi ──
+    'transactions' => [
+        'received' => 'Diterima',
+        'paid' => 'Dibayar',
+        'sold' => 'Dijual',
+        'purchased' => 'Dibeli',
+        'transfer' => 'Pindahan',
+        'adjustment' => 'Pelarasan',
+        'manual_journal' => 'Jurnal Manual',
+    ],
+
+    // ── Label Status ──
+    'status' => [
+        'yes' => 'Ya',
+        'no' => 'Tidak',
+    ],
+
+    // ── Sumber Filament ──
+    'resources' => [
+        'account' => [
+            'navigation_label' => 'Carta Akaun',
+            'model_label' => 'Akaun',
+            'plural_model_label' => 'Carta Akaun',
+            'fields' => [
+                'code' => 'Kod',
+                'name' => 'Nama',
+                'type' => 'Jenis',
+                'system_key' => 'Kunci Sistem',
+                'parent' => 'Akaun Induk',
+                'description' => 'Keterangan',
+                'is_active' => 'Aktif',
+                'balance' => 'Baki',
+                'running_balance' => 'Baki Semasa',
+                'date' => 'Tarikh',
+                'created_at' => 'Dicipta Pada',
+            ],
+            'sections' => [
+                'details' => 'Butiran Akaun',
+            ],
+            'pages' => [
+                'list' => ['title' => 'Carta Akaun'],
+                'create' => ['title' => 'Cipta Akaun'],
+                'edit' => ['title' => 'Kemaskini Akaun'],
+            ],
+        ],
+        'journal' => [
+            'navigation_label' => 'Entri Jurnal',
+            'model_label' => 'Entri Jurnal',
+            'plural_model_label' => 'Entri Jurnal',
+            'fields' => [
+                'date' => 'Tarikh',
+                'date_from' => 'Tarikh Dari',
+                'date_to' => 'Tarikh Hingga',
+                'description' => 'Keterangan',
+                'status' => 'Status',
+                'comments' => 'Ulasan',
+                'void_remarks' => 'Sebab Pembatalan',
+                'reference' => 'Rujukan',
+                'reference_type' => 'Jenis Rujukan',
+                'account' => 'Akaun',
+                'debit' => 'Debit',
+                'credit' => 'Kredit',
+                'entry_description' => 'Keterangan',
+                'total' => 'Jumlah',
+                'total_debit' => 'Jumlah Debit',
+                'total_credit' => 'Jumlah Kredit',
+                'balanced' => 'Seimbang',
+                'amount' => 'Jumlah',
+                'transaction_type' => 'Jenis Transaksi',
+                'created_at' => 'Dicipta Pada',
+            ],
+            'sections' => [
+                'details' => 'Butiran Jurnal',
+                'entries' => 'Entri Jurnal',
+                'summary' => 'Ringkasan',
+            ],
+            'placeholders' => [
+                'void_remarks' => 'Sila nyatakan sebab untuk membatalkan entri jurnal ini...',
+            ],
+            'actions' => [
+                'post' => 'Post',
+                'void' => 'Batal',
+                'adjust' => 'Laraskan',
+                'add_entry' => 'Tambah Entri',
+                'create_transaction' => 'Cipta Transaksi',
+            ],
+            'pages' => [
+                'list' => ['title' => 'Entri Jurnal'],
+                'create' => ['title' => 'Cipta Jurnal Manual'],
+                'edit' => ['title' => 'Kemaskini Entri Jurnal'],
+            ],
+        ],
+    ],
+
+    // ── Laporan ──
+    'reports' => [
+        'fields' => [
+            'as_of_date' => 'Setakat Tarikh',
+            'start_date' => 'Tarikh Mula',
+            'end_date' => 'Tarikh Akhir',
+        ],
+        'trial_balance' => [
+            'title' => 'Imbangan Duga',
+            'navigation_label' => 'Imbangan Duga',
+        ],
+        'income_statement' => [
+            'title' => 'Penyata Pendapatan',
+            'navigation_label' => 'Penyata Pendapatan',
+        ],
+        'balance_sheet' => [
+            'title' => 'Kunci Tara',
+            'navigation_label' => 'Kunci Tara',
+        ],
+    ],
+
+    // ── Widget ──
+    'widgets' => [
+        'account_balance' => [
+            'cash' => 'Tunai di Bank',
+            'cash_description' => 'Baki bank semasa',
+            'receivables' => 'Piutang',
+            'receivables_description' => 'Invois pelanggan yang belum dijelaskan',
+            'payables' => 'Hutang',
+            'payables_description' => 'Bil pembekal yang belum dijelaskan',
+        ],
+        'recent_journals' => [
+            'heading' => 'Catatan Jurnal Terkini',
+            'date' => 'Tarikh',
+            'description' => 'Keterangan',
+            'status' => 'Status',
+            'total' => 'Jumlah',
+        ],
+        'financial_summary' => [
+            'income' => 'Jumlah Pendapatan',
+            'income_description' => 'Pendapatan tahun semasa (:year)',
+            'expenses' => 'Jumlah Perbelanjaan',
+            'expenses_description' => 'Perbelanjaan tahun semasa (:year)',
+            'net_profit' => 'Keuntungan Bersih',
+            'net_profit_description' => 'Pendapatan tolak perbelanjaan',
+        ],
+    ],
+
 ];

@@ -10,6 +10,7 @@ use AloongJerr\Accounting\Transactions\PaidTransaction;
 use AloongJerr\Accounting\Transactions\PurchasedTransaction;
 use AloongJerr\Accounting\Transactions\ReceivedTransaction;
 use AloongJerr\Accounting\Transactions\SoldTransaction;
+use AloongJerr\Accounting\Transactions\TransferTransaction;
 
 beforeEach(function () {
     $this->seed(ChartOfAccountsSeeder::class);
@@ -60,4 +61,8 @@ it('returns PurchasedTransaction from purchased()', function () {
 
 it('returns AdjustmentTransaction from adjustment()', function () {
     expect(Accounting::adjustment(5000, 'test'))->toBeInstanceOf(AdjustmentTransaction::class);
+});
+
+it('returns TransferTransaction from transfer()', function () {
+    expect(Accounting::transfer(5000, 'test'))->toBeInstanceOf(TransferTransaction::class);
 });

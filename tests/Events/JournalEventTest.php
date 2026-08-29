@@ -7,6 +7,7 @@ use AloongJerr\Accounting\Events\JournalPaidEvent;
 use AloongJerr\Accounting\Events\JournalPurchasedEvent;
 use AloongJerr\Accounting\Events\JournalReceivedEvent;
 use AloongJerr\Accounting\Events\JournalSoldEvent;
+use AloongJerr\Accounting\Events\JournalTransferredEvent;
 
 it('has JournalReceivedEvent extending JournalEvent', function () {
     expect(is_subclass_of(JournalReceivedEvent::class, JournalEvent::class))->toBeTrue();
@@ -30,4 +31,8 @@ it('has JournalAdjustmentEvent extending JournalEvent', function () {
 
 it('has JournalManualEvent extending JournalEvent', function () {
     expect(is_subclass_of(JournalManualEvent::class, JournalEvent::class))->toBeTrue();
+});
+
+it('has JournalTransferredEvent extending JournalEvent', function () {
+    expect(is_subclass_of(JournalTransferredEvent::class, JournalEvent::class))->toBeTrue();
 });

@@ -52,12 +52,12 @@ it('throws when parent account not found', function () {
 it('resolves entity account and creates if not exists', function () {
     $entity = new class implements Accountable
     {
-        public function getAccountKeys(): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
+        public function getAccountKeys(array $data = []): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
         {
             return AccountSystemKey::AccountsReceivable;
         }
 
-        public function getAccountIdentifier(): array
+        public function getAccountIdentifier(array $data = []): array
         {
             return ['id' => 999, 'name' => 'Test Customer'];
         }
@@ -76,12 +76,12 @@ it('resolves entity account and creates if not exists', function () {
 it('returns existing entity account on second resolve', function () {
     $entity = new class implements Accountable
     {
-        public function getAccountKeys(): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
+        public function getAccountKeys(array $data = []): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
         {
             return AccountSystemKey::AccountsReceivable;
         }
 
-        public function getAccountIdentifier(): array
+        public function getAccountIdentifier(array $data = []): array
         {
             return ['id' => 888, 'name' => 'Repeat Customer'];
         }
@@ -96,12 +96,12 @@ it('returns existing entity account on second resolve', function () {
 it('creates separate accounts for same entity under different parents', function () {
     $entity = new class implements Accountable
     {
-        public function getAccountKeys(): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
+        public function getAccountKeys(array $data = []): BackedEnum|array|\AloongJerr\Accounting\Enums\AccountSystemKey
         {
             return [AccountSystemKey::AccountsReceivable, AccountSystemKey::AccountsPayable];
         }
 
-        public function getAccountIdentifier(): array
+        public function getAccountIdentifier(array $data = []): array
         {
             return ['id' => 777, 'name' => 'Dual Role Entity'];
         }

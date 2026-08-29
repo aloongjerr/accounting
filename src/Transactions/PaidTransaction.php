@@ -95,6 +95,7 @@ class PaidTransaction extends BaseTransaction
                 $this->toEntity,
                 AccountSystemKey::AccountsPayable,
                 $this->tenantId,
+                $this->data,
             );
         } elseif ($this->toAccount) {
             $debitAccount = $this->toAccount;

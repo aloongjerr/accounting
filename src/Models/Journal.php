@@ -24,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $tenant_id
  * @property string|null $currency
  * @property array|null $comments
+ * @property string|null $void_remarks
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -52,6 +53,7 @@ class Journal extends Model
         'tenant_id',
         'currency',
         'comments',
+        'void_remarks',
     ];
 
     protected $casts = [
@@ -145,12 +147,15 @@ class Journal extends Model
     /**
      * Void the journal entry.
      */
-    public function void(): bool
+    public function void(?string $remarks = null): bool
     {
         if ($this->status->isFinal()) {
             return false;
         }
 
-        return $this->update(['status' => JournalStatus::Void]);
+        return $this->update([
+            'status' => JournalStatus::Void,
+            'void_remarks' => $remarks,
+        ]);
     }
 }
