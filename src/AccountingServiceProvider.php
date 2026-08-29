@@ -191,6 +191,7 @@ class AccountingServiceProvider extends PackageServiceProvider
             'create_journals_table',
             'create_journal_entries_table',
             'create_account_snapshots_table',
+            'create_budgets_table',
         ];
     }
 

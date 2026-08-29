@@ -221,6 +221,51 @@ return [
             'title' => 'Kunci Tara',
             'navigation_label' => 'Kunci Tara',
         ],
+        'aging' => [
+            'title' => 'Laporan Hutang Lama',
+            'navigation_label' => 'Hutang Lama',
+            'buckets' => [
+                'current' => 'Semasa (0-30 hari)',
+                '31-60' => '31-60 hari',
+                '61-90' => '61-90 hari',
+                'over_90' => 'Lebih 90 hari',
+            ],
+            'type' => [
+                'receivable' => 'Akaun Belum Terima',
+                'payable' => 'Akaun Belum Bayar',
+            ],
+            'fields' => [
+                'account' => 'Akaun',
+                'journal' => 'Jurnal',
+                'date' => 'Tarikh',
+                'days_old' => 'Hari Tertunggak',
+                'amount' => 'Jumlah',
+                'bucket' => 'Kategori Umur',
+            ],
+            'summary' => [
+                'total' => 'Jumlah Tertunggak',
+            ],
+        ],
+        'budget' => [
+            'title' => 'Bajet lwn Sebenar',
+            'navigation_label' => 'Bajet lwn Sebenar',
+            'fields' => [
+                'account' => 'Akaun',
+                'budgeted' => 'Dibajetkan',
+                'actual' => 'Sebenar',
+                'variance' => 'Varians',
+                'variance_percentage' => 'Varians %',
+                'start_date' => 'Tarikh Mula',
+                'end_date' => 'Tarikh Akhir',
+                'amount' => 'Jumlah Bajet',
+                'description' => 'Keterangan',
+            ],
+            'summary' => [
+                'total_budgeted' => 'Jumlah Dibajetkan',
+                'total_actual' => 'Jumlah Sebenar',
+                'total_variance' => 'Jumlah Varians',
+            ],
+        ],
     ],
 
     // ── Widget ──

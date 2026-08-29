@@ -7,7 +7,9 @@ use AloongJerr\Accounting\Enums\AccountSystemKey;
 use AloongJerr\Accounting\Ledger\AccountLedger;
 use AloongJerr\Accounting\Ledger\TAccount;
 use AloongJerr\Accounting\Models\Account;
+use AloongJerr\Accounting\Reports\AgingReport;
 use AloongJerr\Accounting\Reports\BalanceSheet;
+use AloongJerr\Accounting\Reports\BudgetReport;
 use AloongJerr\Accounting\Reports\IncomeStatement;
 use AloongJerr\Accounting\Reports\TrialBalance;
 use AloongJerr\Accounting\Resolvers\AccountResolver;
@@ -176,6 +178,22 @@ class AccountingService
     public function balanceSheet(): BalanceSheet
     {
         return new BalanceSheet();
+    }
+
+    /**
+     * Create an AR/AP aging report.
+     */
+    public function aging(): AgingReport
+    {
+        return new AgingReport();
+    }
+
+    /**
+     * Create a budget vs actual report.
+     */
+    public function budgetReport(): BudgetReport
+    {
+        return new BudgetReport();
     }
 
     // ── Snapshot ──

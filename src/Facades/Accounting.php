@@ -6,7 +6,9 @@ use AloongJerr\Accounting\Enums\AccountSystemKey;
 use AloongJerr\Accounting\Ledger\AccountLedger;
 use AloongJerr\Accounting\Ledger\TAccount;
 use AloongJerr\Accounting\Models\Account;
+use AloongJerr\Accounting\Reports\AgingReport;
 use AloongJerr\Accounting\Reports\BalanceSheet;
+use AloongJerr\Accounting\Reports\BudgetReport;
 use AloongJerr\Accounting\Reports\IncomeStatement;
 use AloongJerr\Accounting\Reports\TrialBalance;
 use AloongJerr\Accounting\Resolvers\AccountResolver;
@@ -35,6 +37,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static TrialBalance trialBalance()
  * @method static IncomeStatement incomeStatement()
  * @method static BalanceSheet balanceSheet()
+ * @method static AgingReport aging()
+ * @method static BudgetReport budgetReport()
  * @method static SnapshotManager snapshot()
  * @method static BalanceService balanceService()
  *

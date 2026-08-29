@@ -221,6 +221,51 @@ return [
             'title' => 'Balance Sheet',
             'navigation_label' => 'Balance Sheet',
         ],
+        'aging' => [
+            'title' => 'Aging Report',
+            'navigation_label' => 'Aging Report',
+            'buckets' => [
+                'current' => 'Current (0-30 days)',
+                '31-60' => '31-60 days',
+                '61-90' => '61-90 days',
+                'over_90' => 'Over 90 days',
+            ],
+            'type' => [
+                'receivable' => 'Accounts Receivable',
+                'payable' => 'Accounts Payable',
+            ],
+            'fields' => [
+                'account' => 'Account',
+                'journal' => 'Journal',
+                'date' => 'Date',
+                'days_old' => 'Days Old',
+                'amount' => 'Amount',
+                'bucket' => 'Age Bucket',
+            ],
+            'summary' => [
+                'total' => 'Total Outstanding',
+            ],
+        ],
+        'budget' => [
+            'title' => 'Budget vs Actual',
+            'navigation_label' => 'Budget vs Actual',
+            'fields' => [
+                'account' => 'Account',
+                'budgeted' => 'Budgeted',
+                'actual' => 'Actual',
+                'variance' => 'Variance',
+                'variance_percentage' => 'Variance %',
+                'start_date' => 'Start Date',
+                'end_date' => 'End Date',
+                'amount' => 'Budget Amount',
+                'description' => 'Description',
+            ],
+            'summary' => [
+                'total_budgeted' => 'Total Budgeted',
+                'total_actual' => 'Total Actual',
+                'total_variance' => 'Total Variance',
+            ],
+        ],
     ],
 
     // ── Widgets ──
