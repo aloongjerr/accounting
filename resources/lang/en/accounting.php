@@ -266,6 +266,41 @@ return [
                 'total_variance' => 'Total Variance',
             ],
         ],
+        'reconciliation' => [
+            'title' => 'Bank Reconciliation',
+            'navigation_label' => 'Bank Reconciliation',
+            'status' => [
+                'draft' => 'Draft',
+                'completed' => 'Completed',
+            ],
+            'type' => [
+                'matched' => 'Matched',
+                'unmatched_bank' => 'Unmatched Bank',
+                'unmatched_system' => 'Unmatched System',
+            ],
+            'fields' => [
+                'account' => 'Bank Account',
+                'start_date' => 'Start Date',
+                'end_date' => 'End Date',
+                'opening_balance' => 'Opening Balance',
+                'closing_balance' => 'Closing Balance',
+                'status' => 'Status',
+                'transaction_date' => 'Transaction Date',
+                'description' => 'Description',
+                'amount' => 'Amount',
+                'reference' => 'Reference',
+                'bank_type' => 'Type',
+                'is_matched' => 'Matched',
+            ],
+            'summary' => [
+                'bank_statement_balance' => 'Bank Statement Balance',
+                'system_balance' => 'System Balance',
+                'matched_total' => 'Total Matched',
+                'unmatched_bank_total' => 'Unmatched Bank Items',
+                'unmatched_system_total' => 'Unmatched System Items',
+                'difference' => 'Difference',
+            ],
+        ],
     ],
 
     // ── Widgets ──

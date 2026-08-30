@@ -11,6 +11,7 @@ use AloongJerr\Accounting\Reports\AgingReport;
 use AloongJerr\Accounting\Reports\BalanceSheet;
 use AloongJerr\Accounting\Reports\BudgetReport;
 use AloongJerr\Accounting\Reports\IncomeStatement;
+use AloongJerr\Accounting\Reports\ReconciliationReport;
 use AloongJerr\Accounting\Reports\TrialBalance;
 use AloongJerr\Accounting\Resolvers\AccountResolver;
 use AloongJerr\Accounting\Snapshots\SnapshotManager;
@@ -194,6 +195,14 @@ class AccountingService
     public function budgetReport(): BudgetReport
     {
         return new BudgetReport();
+    }
+
+    /**
+     * Create a bank reconciliation report.
+     */
+    public function reconciliationReport(int $reconciliationId): ReconciliationReport
+    {
+        return new ReconciliationReport($reconciliationId);
     }
 
     // ── Snapshot ──

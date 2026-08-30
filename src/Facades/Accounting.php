@@ -10,6 +10,7 @@ use AloongJerr\Accounting\Reports\AgingReport;
 use AloongJerr\Accounting\Reports\BalanceSheet;
 use AloongJerr\Accounting\Reports\BudgetReport;
 use AloongJerr\Accounting\Reports\IncomeStatement;
+use AloongJerr\Accounting\Reports\ReconciliationReport;
 use AloongJerr\Accounting\Reports\TrialBalance;
 use AloongJerr\Accounting\Resolvers\AccountResolver;
 use AloongJerr\Accounting\Services\AccountingService;
@@ -39,6 +40,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static BalanceSheet balanceSheet()
  * @method static AgingReport aging()
  * @method static BudgetReport budgetReport()
+ * @method static ReconciliationReport reconciliationReport(int $reconciliationId)
  * @method static SnapshotManager snapshot()
  * @method static BalanceService balanceService()
  *

@@ -266,6 +266,41 @@ return [
                 'total_variance' => 'Jumlah Varians',
             ],
         ],
+        'reconciliation' => [
+            'title' => 'Penyelarasan Bank',
+            'navigation_label' => 'Penyelarasan Bank',
+            'status' => [
+                'draft' => 'Draf',
+                'completed' => 'Selesai',
+            ],
+            'type' => [
+                'matched' => 'Dipadankan',
+                'unmatched_bank' => 'Bank Tidak Dipadankan',
+                'unmatched_system' => 'Sistem Tidak Dipadankan',
+            ],
+            'fields' => [
+                'account' => 'Akaun Bank',
+                'start_date' => 'Tarikh Mula',
+                'end_date' => 'Tarikh Akhir',
+                'opening_balance' => 'Baki Pembukaan',
+                'closing_balance' => 'Baki Penutupan',
+                'status' => 'Status',
+                'transaction_date' => 'Tarikh Transaksi',
+                'description' => 'Keterangan',
+                'amount' => 'Jumlah',
+                'reference' => 'Rujukan',
+                'bank_type' => 'Jenis',
+                'is_matched' => 'Dipadankan',
+            ],
+            'summary' => [
+                'bank_statement_balance' => 'Baki Penyata Bank',
+                'system_balance' => 'Baki Sistem',
+                'matched_total' => 'Jumlah Dipadankan',
+                'unmatched_bank_total' => 'Item Bank Tidak Dipadankan',
+                'unmatched_system_total' => 'Item Sistem Tidak Dipadankan',
+                'difference' => 'Perbezaan',
+            ],
+        ],
     ],
 
     // ── Widget ──
