@@ -2,12 +2,16 @@
 
 ## Table of Contents
 
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Fluent Configuration API](#fluent-configuration-api)
 - [Transactions](#transactions)
   - [Receiving Money](#receiving-money)
   - [Paying Money](#paying-money)
   - [Recording Sales](#recording-sales)
   - [Recording Purchases](#recording-purchases)
   - [Transfers](#transfers)
+  - [Adjustments](#adjustments)
   - [Manual Journal Entries](#manual-journal-entries)
 - [Account Mapping](#account-mapping)
   - [Accountable Interface](#accountable-interface)
@@ -16,6 +20,9 @@
 - [Journals](#journals)
   - [Journal Lifecycle](#journal-lifecycle)
   - [Voiding Journals](#voiding-journals)
+- [Ledger](#ledger)
+  - [Account Ledger](#account-ledger)
+  - [T-Account](#t-account)
 - [Reports](#reports)
   - [Trial Balance](#trial-balance)
   - [Income Statement](#income-statement)
@@ -23,7 +30,81 @@
   - [AR/AP Aging Report](#arap-aging-report)
   - [Budget vs Actual](#budget-vs-actual)
   - [Bank Reconciliation](#bank-reconciliation)
+- [Snapshots](#snapshots)
+  - [On-Demand Driver](#on-demand-driver)
+  - [Scheduled Driver](#scheduled-driver)
+  - [Custom Schedule](#custom-schedule)
+  - [Manual Generation](#manual-generation)
+  - [Custom Drivers](#custom-drivers)
+- [Events](#events)
 - [Multi-Tenancy](#multi-tenancy)
+
+---
+
+## Installation
+
+### Composer
+
+```bash
+composer require aloongjerr/accounting
+```
+
+### Artisan Install Command
+
+The install command publishes config, migrations, runs migrations, and seeds the chart of accounts:
+
+```bash
+php artisan accounting:install
+```
+
+Or do it manually:
+
+```bash
+php artisan vendor:publish --tag="accounting-migrations"
+php artisan migrate
+php artisan vendor:publish --tag="accounting-config"
+php artisan db:seed --class="\AloongJerr\Accounting\Database\Seeders\ChartOfAccountsSeeder"
+```
+
+---
+
+## Configuration
+
+### Fluent Configuration API
+
+Configure the package programmatically in your `AppServiceProvider`:
+
+```php
+use AloongJerr\Accounting\Facades\Accounting;
+
+public function boot(): void
+{
+    Accounting::configure(function ($accounting) {
+        $accounting->currency('MYR')
+            ->connection('accounting')
+            ->fiscalYear(startMonth: 7, startDay: 1, endMonth: 6, endDay: 30)
+            ->snapshot(driver: 'scheduled', scheduleTime: '00:10')
+            ->immutable(true)
+            ->schedule(function ($schedule) {
+                $schedule->command('accounting:generate-snapshots')
+                    ->dailyAt('00:10')
+                    ->evenInMaintenanceMode();
+            });
+    });
+}
+```
+
+Available configuration methods:
+
+| Method | Description |
+|--------|-------------|
+| `currency(string)` | Set default currency |
+| `connection(?string)` | Set database connection |
+| `fiscalYear(...)` | Set fiscal year start/end |
+| `snapshot(driver, scheduleTime)` | Set snapshot driver and time |
+| `immutable(bool)` | Enable/disable immutability |
+| `accountKeys(array)` | Register custom account key enums |
+| `schedule(Closure)` | Customize scheduled tasks |
 
 ---
 
@@ -155,6 +236,24 @@ Accounting::transfer(200000, 'Internal transfer')
 Accounting::transfer(150000, 'Transfer')
     ->fromSystemKey(AccountSystemKey::CashOnHand)
     ->toSystemKey(AccountSystemKey::CashInBank)
+    ->commit();
+```
+
+### Adjustments
+
+Manual corrections with explicit debit and credit accounts.
+
+```php
+// Inventory correction
+Accounting::adjustment(50000, 'Inventory adjustment')
+    ->debit($inventoryAccount)
+    ->credit($expenseAccount)
+    ->commit();
+
+// Fix an overpayment
+Accounting::adjustment(10000, 'Payment correction')
+    ->debit($bankAccount)
+    ->credit($arAccount)
     ->commit();
 ```
 
@@ -319,6 +418,67 @@ $journal->void('Customer requested cancellation');
 
 ---
 
+## Ledger
+
+### Account Ledger
+
+View all entries for a single account with running balance:
+
+```php
+// Get ledger for an account
+$ledger = Accounting::ledger(AccountSystemKey::CashInBank)
+    ->forPeriod(Carbon::parse('2024-01-01'), Carbon::parse('2024-12-31'))
+    ->forTenant($tenantId); // optional
+
+// Opening balance (cumulative before period)
+$ledger->getOpeningBalance(); // int (in cents)
+
+// Closing balance (cumulative through period end)
+$ledger->getClosingBalance(); // int (in cents)
+
+// Total debits/credits for the period
+$ledger->getTotalDebit();
+$ledger->getTotalCredit();
+
+// Get all entries with running balance
+$entries = $ledger->getEntries();
+
+foreach ($entries as $entry) {
+    echo $entry->date;
+    echo $entry->description;
+    echo $entry->debit;
+    echo $entry->credit;
+    echo $entry->runningBalance;
+    echo $entry->journal->description;
+}
+```
+
+### T-Account
+
+Traditional T-account layout with debits on the left, credits on the right:
+
+```php
+// Get T-account view
+$tAccount = Accounting::tAccount(AccountSystemKey::AccountsReceivable)
+    ->forPeriod(Carbon::parse('2024-01-01'), Carbon::parse('2024-12-31'));
+
+// Debit side (left)
+$debits = $tAccount->getDebitEntries();
+
+// Credit side (right)
+$credits = $tAccount->getCreditEntries();
+
+// Totals
+$tAccount->getTotalDebit();
+$tAccount->getTotalCredit();
+
+// Balances
+$tAccount->getOpeningBalance();
+$tAccount->getClosingBalance();
+```
+
+---
+
 ## Reports
 
 ### Trial Balance
@@ -471,6 +631,119 @@ $summary = $report->summary();
 
 // Complete the reconciliation
 $reconciliation->complete();
+```
+
+---
+
+## Snapshots
+
+The snapshot system optimizes balance calculations by caching results.
+
+### On-Demand Driver (Default)
+
+Calculates on first request, stores in `account_snapshots` table. Subsequent requests served from DB.
+
+```php
+// In config/accounting.php
+'snapshot' => [
+    'driver' => 'on_demand',
+],
+```
+
+No cron job required. Works on shared hosting.
+
+### Scheduled Driver
+
+Pre-generates snapshots via artisan command + scheduler. Best for VPS/dedicated servers.
+
+```php
+// In config/accounting.php
+'snapshot' => [
+    'driver' => 'scheduled',
+    'schedule_time' => '02:00',
+],
+```
+
+The schedule is auto-registered when `driver` is `scheduled`. By default, it runs `accounting:generate-snapshots` daily at the configured `schedule_time`.
+
+### Custom Schedule
+
+Override the default schedule using the fluent configuration API:
+
+```php
+use AloongJerr\Accounting\Facades\Accounting;
+
+// In AppServiceProvider::boot()
+Accounting::configure(function ($accounting) {
+    $accounting->snapshot(driver: 'scheduled', scheduleTime: '00:10')
+        ->schedule(function ($schedule) {
+            // Full control over the schedule
+            $schedule->command('accounting:generate-snapshots')
+                ->dailyAt('00:10')
+                ->evenInMaintenanceMode()
+                ->withoutOverlapping();
+        });
+});
+```
+
+When a custom `schedule()` callback is provided, it receives the `Schedule` instance directly and the default schedule is not registered.
+
+### Manual Generation
+
+```bash
+# Generate for today
+php artisan accounting:generate-snapshots
+
+# Generate for a specific date
+php artisan accounting:generate-snapshots --date=2024-12-31
+
+# Generate for a date range
+php artisan accounting:generate-snapshots --from=2024-01-01 --to=2024-12-31
+
+# Generate for a specific tenant
+php artisan accounting:generate-snapshots --tenant=1
+```
+
+### Custom Drivers
+
+Register your own snapshot driver via `SnapshotManager::extend()`:
+
+```php
+use AloongJerr\Accounting\Facades\Accounting;
+use AloongJerr\Accounting\Snapshots\Contracts\SnapshotDriver;
+
+// In AppServiceProvider::boot()
+Accounting::snapshot()->extend('redis', function ($balanceService) {
+    return new RedisSnapshotDriver($balanceService);
+});
+```
+
+---
+
+## Events
+
+All transactions dispatch events after successful commit:
+
+| Transaction | Event |
+|-------------|-------|
+| `received()` | `JournalReceivedEvent` |
+| `paid()` | `JournalPaidEvent` |
+| `sold()` | `JournalSoldEvent` |
+| `purchased()` | `JournalPurchasedEvent` |
+| `transfer()` | `JournalTransferredEvent` |
+| `adjustment()` | `JournalAdjustmentEvent` |
+| `journal()` | `JournalCreatedEvent` |
+
+All events contain the `Journal` model:
+
+```php
+use AloongJerr\Accounting\Events\JournalReceivedEvent;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(JournalReceivedEvent::class, function ($event) {
+    $journal = $event->journal;
+    // Send notification, update external system, etc.
+});
 ```
 
 ---

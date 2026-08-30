@@ -9,7 +9,7 @@ A comprehensive double-entry accounting package for Laravel with Filament v5 adm
 ## Features
 
 - **Double-Entry Bookkeeping** — Every transaction creates balanced debit/credit entries
-- **Fluent Transaction API** — Intuitive builders for common transactions (received, paid, sold, purchased, transfer)
+- **Fluent Transaction API** — Intuitive builders for common transactions (received, paid, sold, purchased, transfer, adjustment)
 - **Auto-Mapping** — Automatically creates and resolves customer/supplier accounts via the `Accountable` interface
 - **Immutable Journals** — Posted journals cannot be modified; corrections via void or adjustment entries
 - **Chart of Accounts** — Pre-seeded hierarchical chart with 50+ accounts across 5 groups
@@ -17,7 +17,11 @@ A comprehensive double-entry accounting package for Laravel with Filament v5 adm
 - **AR/AP Aging Report** — Track outstanding receivables and payables with age buckets
 - **Budget vs Actual** — Compare budgeted amounts against actual spending with variance analysis
 - **Bank Reconciliation** — Match bank statement lines against system entries
-- **Snapshot System** — Optimized balance calculations with on-demand or scheduled caching
+- **Snapshot System** — Optimized balance calculations with on-demand, scheduled, or custom caching drivers
+- **Ledger & T-Account** — Per-account ledger views with running balances
+- **Fluent Configuration** — Programmatic runtime configuration with custom schedule support
+- **Artisan Commands** — Install command and snapshot generation
+- **Event System** — Events dispatched for all transaction types
 - **Multi-Tenant Ready** — Built-in tenant isolation for SaaS applications
 - **Filament v5 UI** — Beautiful admin interface with resources, pages, and widgets
 
@@ -36,22 +40,20 @@ Add the plugin's views to your theme CSS file:
 @source '../../../../vendor/aloongjerr/accounting/resources/**/*.blade.php';
 ```
 
-Publish and run migrations:
+### Quick Install (Recommended)
+
+```bash
+php artisan accounting:install
+```
+
+This publishes config, migrations, runs migrations, and seeds the chart of accounts.
+
+### Manual Install
 
 ```bash
 php artisan vendor:publish --tag="accounting-migrations"
 php artisan migrate
-```
-
-Publish the config file:
-
-```bash
 php artisan vendor:publish --tag="accounting-config"
-```
-
-Seed the default chart of accounts:
-
-```bash
 php artisan db:seed --class="\AloongJerr\Accounting\Database\Seeders\ChartOfAccountsSeeder"
 ```
 
@@ -109,6 +111,12 @@ Accounting::transfer(100000, 'Cash to bank')
     ->toBank()
     ->commit();
 
+// Adjustment (explicit debit/credit)
+Accounting::adjustment(50000, 'Inventory correction')
+    ->debit($inventoryAccount)
+    ->credit($expenseAccount)
+    ->commit();
+
 // Manual journal entry
 Accounting::journal('Depreciation entry')
     ->debit($depreciationExpense, 10000)
@@ -157,6 +165,27 @@ Accounting::received(50000, 'Payment')->from($customer)->toCash()->commit();
 // Automatically creates/credits "Customer 1 - Acme Corp" AR account
 ```
 
+## Ledger & T-Account
+
+```php
+// Account Ledger with running balance
+$ledger = Accounting::ledger(AccountSystemKey::CashInBank)
+    ->forPeriod(Carbon::parse('2024-01-01'), Carbon::parse('2024-12-31'));
+
+$ledger->getOpeningBalance();  // Cumulative before period
+$ledger->getClosingBalance();  // Cumulative through period end
+$ledger->getTotalDebit();
+$ledger->getTotalCredit();
+$entries = $ledger->getEntries(); // With running balance
+
+// T-Account (debits left, credits right)
+$tAccount = Accounting::tAccount(AccountSystemKey::AccountsReceivable)
+    ->forPeriod(Carbon::parse('2024-01-01'), Carbon::parse('2024-12-31'));
+
+$tAccount->getDebitEntries();
+$tAccount->getCreditEntries();
+```
+
 ## Reports
 
 ```php
@@ -193,6 +222,8 @@ Accounting::reconciliationReport($reconciliationId)
 
 ## Configuration
 
+### Config File
+
 ```php
 return [
     // Separate database connection (optional)
@@ -219,6 +250,56 @@ return [
     'immutable' => true,
 ];
 ```
+
+### Fluent Configuration API
+
+Configure programmatically in your `AppServiceProvider`:
+
+```php
+use AloongJerr\Accounting\Facades\Accounting;
+
+public function boot(): void
+{
+    Accounting::configure(function ($accounting) {
+        $accounting->currency('MYR')
+            ->fiscalYear(startMonth: 7, startDay: 1, endMonth: 6, endDay: 30)
+            ->snapshot(driver: 'scheduled', scheduleTime: '00:10')
+            ->immutable(true)
+            ->schedule(function ($schedule) {
+                $schedule->command('accounting:generate-snapshots')
+                    ->dailyAt('00:10')
+                    ->evenInMaintenanceMode();
+            });
+    });
+}
+```
+
+## Artisan Commands
+
+```bash
+# Install: publish config, migrations, run migrations, seed chart of accounts
+php artisan accounting:install
+
+# Generate snapshots
+php artisan accounting:generate-snapshots                    # Today
+php artisan accounting:generate-snapshots --date=2024-12-31  # Specific date
+php artisan accounting:generate-snapshots --from=2024-01-01 --to=2024-12-31
+php artisan accounting:generate-snapshots --tenant=1
+```
+
+## Events
+
+All transactions dispatch events after commit:
+
+| Transaction | Event |
+|-------------|-------|
+| `received()` | `JournalReceivedEvent` |
+| `paid()` | `JournalPaidEvent` |
+| `sold()` | `JournalSoldEvent` |
+| `purchased()` | `JournalPurchasedEvent` |
+| `transfer()` | `JournalTransferredEvent` |
+| `adjustment()` | `JournalAdjustmentEvent` |
+| `journal()` | `JournalCreatedEvent` |
 
 ## Architecture
 

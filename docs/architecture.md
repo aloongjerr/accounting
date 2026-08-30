@@ -6,7 +6,11 @@
 - [Chart of Accounts](#chart-of-accounts)
 - [Auto-Mapping Resolver](#auto-mapping-resolver)
 - [Transaction Builders](#transaction-builders)
+- [Ledger System](#ledger-system)
 - [Snapshot System](#snapshot-system)
+- [Fluent Configuration](#fluent-configuration)
+- [Events](#events)
+- [Artisan Commands](#artisan-commands)
 - [Data Immutability](#data-immutability)
 - [Multi-Tenancy](#multi-tenancy)
 
@@ -174,7 +178,8 @@ Each transaction type uses a specialized builder:
 | Sold | `SoldTransaction` | Accounts Receivable | Revenue |
 | Purchased | `PurchasedTransaction` | Expense/Asset | Accounts Payable |
 | Transfer | `TransferTransaction` | Destination Account | Source Account |
-| Journal | `ManualTransaction` | Specified Account | Specified Account |
+| Adjustment | `AdjustmentTransaction` | Explicit Account | Explicit Account |
+| Journal | `ManualJournal` | Specified Account | Specified Account |
 
 ### Builder Pattern
 
@@ -205,41 +210,179 @@ Accounting::{type}(amount, description)
 
 ---
 
+## Ledger System
+
+The ledger system provides per-account views of journal entries.
+
+### AccountLedger
+
+Shows all entries affecting an account within a period, with a running balance:
+
+```
+AccountLedger
+- forPeriod($from, $to)    -- Set date range
+- forTenant($tenantId)     -- Filter by tenant
+- getOpeningBalance()      -- Cumulative before period
+- getClosingBalance()      -- Cumulative through period end
+- getTotalDebit()          -- Sum of debits in period
+- getTotalCredit()         -- Sum of credits in period
+- getEntries()             -- Collection of LedgerEntry with running balance
+```
+
+### TAccount
+
+Traditional T-account layout separating debits (left) and credits (right):
+
+```
+TAccount
+- forPeriod($from, $to)    -- Set date range
+- forTenant($tenantId)     -- Filter by tenant
+- getOpeningBalance()      -- Cumulative before period
+- getClosingBalance()      -- Cumulative through period end
+- getDebitEntries()        -- Left side
+- getCreditEntries()       -- Right side
+- getTotalDebit()          -- Sum of debit side
+- getTotalCredit()         -- Sum of credit side
+```
+
+---
+
 ## Snapshot System
 
 Account balances are cached in the `account_snapshots` table for performance.
 
+### Driver Architecture
+
+```
+SnapshotManager (like Laravel's CacheManager)
+- driver('on_demand')  -> OnDemandDriver
+- driver('scheduled')  -> ScheduledDriver
+- driver('null')       -> NullDriver
+- extend('custom', fn) -> CustomDriver
+```
+
 ### Drivers
 
-| Driver | Description | Use Case |
-|--------|-------------|----------|
-| `on_demand` | Calculates on first request, stores for subsequent reads | Shared hosting, no cron |
-| `scheduled` | Pre-generates via artisan command + scheduler | VPS/dedicated servers |
-| `null` | Always calculates from entries | Development/testing |
+| Driver | Class | Description | Use Case |
+|--------|-------|-------------|----------|
+| `on_demand` | `OnDemandDriver` | Calculates on first request, stores in DB | Shared hosting, no cron |
+| `scheduled` | `ScheduledDriver` | Pre-generates via artisan command | VPS/dedicated servers |
+| `null` | `NullDriver` | Always calculates from entries | Development/testing |
 
-### How It Works
+### OnDemandDriver Flow
 
 ```
 1. Request balance for Account X on date Y
-   └─> Check account_snapshots table
+   -> Check account_snapshots table
 
 2. If snapshot exists:
-   └─> Return cached balance
+   -> Return cached balance
 
 3. If snapshot doesn't exist:
-   └─> Calculate from journal_entries
-   └─> Store in account_snapshots
-   └─> Return calculated balance
+   -> Calculate from journal_entries
+   -> Store in account_snapshots
+   -> Return calculated balance
 ```
 
-### Scheduled Snapshots
+### ScheduledDriver Flow
+
+```
+1. Scheduler runs: php artisan accounting:generate-snapshots
+   -> Calculates all account balances for the date
+   -> Stores in account_snapshots table
+
+2. Request balance for Account X on date Y
+   -> Look up closest pre-generated snapshot
+   -> Return cached balance
+```
+
+### Custom Drivers
+
+Extend the SnapshotManager with your own driver:
 
 ```php
-// In app/Console/Kernel.php
-protected function schedule(Schedule $schedule)
+Accounting::snapshot()->extend('redis', function ($balanceService) {
+    return new RedisSnapshotDriver($balanceService);
+});
+```
+
+Custom drivers must implement `SnapshotDriver`:
+
+```php
+interface SnapshotDriver
 {
-    $schedule->command('accounting:generate-snapshots')->dailyAt('02:00');
+    public function getCumulativeBalances(Carbon $asOf, ?int $tenantId = null): Collection;
 }
+```
+
+---
+
+## Fluent Configuration
+
+The `AccountingConfiguration` class provides a fluent interface for runtime configuration:
+
+```php
+Accounting::configure(function ($config) {
+    $config->currency('MYR')
+          ->connection('accounting')
+          ->fiscalYear(startMonth: 7, startDay: 1, endMonth: 6, endDay: 30)
+          ->snapshot(driver: 'scheduled', scheduleTime: '00:10')
+          ->immutable(true)
+          ->schedule(function ($schedule) {
+              $schedule->command('accounting:generate-snapshots')
+                  ->dailyAt('00:10')
+                  ->evenInMaintenanceMode();
+          });
+});
+```
+
+### Schedule Registration
+
+The ServiceProvider checks for a custom schedule callback:
+
+```
+ServiceProvider::packageBooted()
+  -> Is snapshot.driver == 'scheduled'?
+     -> YES: Is there a custom schedule callback?
+        -> YES: Call the user's callback with $schedule
+        -> NO: Register default schedule (dailyAt from config)
+     -> NO: Do nothing
+```
+
+---
+
+## Events
+
+All transactions dispatch events after successful commit:
+
+| Transaction | Event |
+|-------------|-------|
+| `received()` | `JournalReceivedEvent` |
+| `paid()` | `JournalPaidEvent` |
+| `sold()` | `JournalSoldEvent` |
+| `purchased()` | `JournalPurchasedEvent` |
+| `transfer()` | `JournalTransferredEvent` |
+| `adjustment()` | `JournalAdjustmentEvent` |
+| `journal()` | `JournalCreatedEvent` |
+
+All events expose the `Journal` model via `$event->journal`.
+
+---
+
+## Artisan Commands
+
+| Command | Description |
+|---------|-------------|
+| `accounting:install` | Publish config, migrations, run migrations, seed chart of accounts |
+| `accounting:generate-snapshots` | Generate balance snapshots for the scheduled driver |
+
+### Generate Snapshots Options
+
+```bash
+php artisan accounting:generate-snapshots                    # Today
+php artisan accounting:generate-snapshots --date=2024-12-31  # Specific date
+php artisan accounting:generate-snapshots --from=2024-01-01 --to=2024-12-31
+php artisan accounting:generate-snapshots --tenant=1
 ```
 
 ---
@@ -324,18 +467,18 @@ Tenants are stored in the `tenants` table with:
 
 ```
 Account
-├── parent_id → Account (self-referential)
-├── children → Account[]
-├── journalEntries → JournalEntry[]
-├── morphable → Accountable model (polymorphic)
-└── snapshots → AccountSnapshot[]
+- parent_id -> Account (self-referential)
+- children -> Account[]
+- journalEntries -> JournalEntry[]
+- morphable -> Accountable model (polymorphic)
+- snapshots -> AccountSnapshot[]
 
 Journal
-├── entries → JournalEntry[]
-└── tenant → Tenant
+- entries -> JournalEntry[]
+- tenant -> Tenant
 
 JournalEntry
-├── account → Account
-├── journal → Journal
-└── tenant → Tenant
+- account -> Account
+- journal -> Journal
+- tenant -> Tenant
 ```
