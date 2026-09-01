@@ -2,6 +2,7 @@
 
 namespace AloongJerr\Accounting\Services;
 
+use AloongJerr\Accounting\Accounting;
 use AloongJerr\Accounting\Enums\AccountType;
 use AloongJerr\Accounting\Enums\JournalStatus;
 use AloongJerr\Accounting\ValueObjects\AccountActivity;
@@ -28,7 +29,9 @@ class BalanceService
      */
     public function getCumulativeBalances(Carbon $asOf, ?int $tenantId = null): Collection
     {
-        $query = DB::table('journal_entries')
+        $db = DB::connection(Accounting::config('connection'));
+
+        $query = $db->table('journal_entries')
             ->join('journals', 'journal_entries.journal_id', '=', 'journals.id')
             ->join('accounts', 'journal_entries.account_id', '=', 'accounts.id')
             ->where('journals.date', '<=', $asOf->copy()->endOfDay())
@@ -61,7 +64,9 @@ class BalanceService
      */
     public function getPeriodActivity(Carbon $from, Carbon $to, ?int $tenantId = null): Collection
     {
-        $query = DB::table('journal_entries')
+        $db = DB::connection(Accounting::config('connection'));
+
+        $query = $db->table('journal_entries')
             ->join('journals', 'journal_entries.journal_id', '=', 'journals.id')
             ->join('accounts', 'journal_entries.account_id', '=', 'accounts.id')
             ->where('journals.date', '>=', $from->startOfDay())
@@ -93,7 +98,9 @@ class BalanceService
      */
     public function getAccountBalance(int $accountId, Carbon $asOf): AccountBalance
     {
-        $result = DB::table('journal_entries')
+        $db = DB::connection(Accounting::config('connection'));
+
+        $result = $db->table('journal_entries')
             ->join('journals', 'journal_entries.journal_id', '=', 'journals.id')
             ->where('journal_entries.account_id', $accountId)
             ->where('journals.date', '<=', $asOf->copy()->endOfDay())
@@ -114,7 +121,9 @@ class BalanceService
      */
     public function getAccountPeriodActivity(int $accountId, Carbon $from, Carbon $to): AccountActivity
     {
-        $result = DB::table('journal_entries')
+        $db = DB::connection(Accounting::config('connection'));
+
+        $result = $db->table('journal_entries')
             ->join('journals', 'journal_entries.journal_id', '=', 'journals.id')
             ->where('journal_entries.account_id', $accountId)
             ->where('journals.date', '>=', $from->startOfDay())

@@ -83,6 +83,50 @@ class IncomeStatement extends Report
     }
 
     /**
+     * Get income statement rows filtered to revenue accounts only.
+     *
+     * @return Collection<int, \AloongJerr\Accounting\ValueObjects\ReportRow>
+     */
+    public function getIncomeRows(): Collection
+    {
+        return $this->get()->filter(fn ($item) => $this->isRevenueAccount($item))->values();
+    }
+
+    /**
+     * Get income statement rows filtered to expense accounts only.
+     *
+     * @return Collection<int, \AloongJerr\Accounting\ValueObjects\ReportRow>
+     */
+    public function getExpenseRows(): Collection
+    {
+        return $this->get()->filter(fn ($item) => $this->isExpenseAccount($item))->values();
+    }
+
+    /**
+     * Get total revenue amount.
+     */
+    public function getTotalRevenue(): int
+    {
+        return $this->summary()->revenue;
+    }
+
+    /**
+     * Get total expenses amount.
+     */
+    public function getTotalExpenses(): int
+    {
+        return $this->summary()->expenses;
+    }
+
+    /**
+     * Get net profit (revenue - expenses).
+     */
+    public function getNetProfit(): int
+    {
+        return $this->summary()->net_profit;
+    }
+
+    /**
      * Check if an account is an income statement account (revenue or expense).
      */
     protected function isIncomeAccount(object $item): bool

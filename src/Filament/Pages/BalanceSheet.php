@@ -5,16 +5,18 @@ namespace AloongJerr\Accounting\Filament\Pages;
 use AloongJerr\Accounting\AccountingPlugin;
 use AloongJerr\Accounting\Reports\BalanceSheet as BalanceSheetReport;
 use Filament\Forms;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Concerns\RestrictsFileUploadsToSchemaComponents;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use UnitEnum;
 
-class BalanceSheet extends Page implements HasForms
+class BalanceSheet extends Page implements HasSchemas
 {
-    use InteractsWithForms;
+    use InteractsWithSchemas;
+    use RestrictsFileUploadsToSchemaComponents;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-scale';
 
@@ -22,7 +24,7 @@ class BalanceSheet extends Page implements HasForms
 
     protected string $view = 'accounting::filament.pages.balance-sheet';
 
-    public ?string $date = null;
+    public ?array $data = [];
 
     public array $reportData = [];
 
@@ -61,10 +63,10 @@ class BalanceSheet extends Page implements HasForms
         $this->generateReport();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Forms\Components\DatePicker::make('date')
                     ->label(__('accounting::accounting.reports.fields.as_of_date'))
                     ->required()
@@ -76,7 +78,7 @@ class BalanceSheet extends Page implements HasForms
     public function generateReport(): void
     {
         $date = $this->form->getState()['date'] ?? now()->format('Y-m-d');
-        $report = new BalanceSheetReport($date);
+        $report = (new BalanceSheetReport())->asOf($date);
 
         $this->reportData = [
             'asset_rows' => $report->getAssetRows(),

@@ -6,16 +6,18 @@ use AloongJerr\Accounting\Accounting;
 use AloongJerr\Accounting\AccountingPlugin;
 use AloongJerr\Accounting\Reports\IncomeStatement as IncomeStatementReport;
 use Filament\Forms;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Concerns\RestrictsFileUploadsToSchemaComponents;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use UnitEnum;
 
-class IncomeStatement extends Page implements HasForms
+class IncomeStatement extends Page implements HasSchemas
 {
-    use InteractsWithForms;
+    use InteractsWithSchemas;
+    use RestrictsFileUploadsToSchemaComponents;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar';
 
@@ -23,9 +25,7 @@ class IncomeStatement extends Page implements HasForms
 
     protected string $view = 'accounting::filament.pages.income-statement';
 
-    public ?string $start_date = null;
-
-    public ?string $end_date = null;
+    public ?array $data = [];
 
     public array $reportData = [];
 
@@ -67,10 +67,10 @@ class IncomeStatement extends Page implements HasForms
         $this->generateReport();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Forms\Components\DatePicker::make('start_date')
                     ->label(__('accounting::accounting.reports.fields.start_date'))
                     ->required()
@@ -90,12 +90,12 @@ class IncomeStatement extends Page implements HasForms
         $startDate = $state['start_date'] ?? now()->startOfYear()->format('Y-m-d');
         $endDate = $state['end_date'] ?? now()->endOfYear()->format('Y-m-d');
 
-        $report = new IncomeStatementReport($startDate, $endDate);
+        $report = (new IncomeStatementReport())->forPeriod($startDate, $endDate);
 
         $this->reportData = [
             'income_rows' => $report->getIncomeRows(),
             'expense_rows' => $report->getExpenseRows(),
-            'total_income' => $report->getTotalIncome(),
+            'total_income' => $report->getTotalRevenue(),
             'total_expenses' => $report->getTotalExpenses(),
             'net_profit' => $report->getNetProfit(),
             'start_date' => $startDate,

@@ -2,18 +2,19 @@
 
 namespace AloongJerr\Accounting\Filament\Resources;
 
-use AloongJerr\Accounting\Accounting;
 use AloongJerr\Accounting\AccountingPlugin;
 use AloongJerr\Accounting\Enums\JournalStatus;
+use AloongJerr\Accounting\Facades\Accounting;
 use AloongJerr\Accounting\Filament\Resources\JournalResource\Pages;
 use AloongJerr\Accounting\Models\Account;
 use AloongJerr\Accounting\Models\Journal;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
 use UnitEnum;
 
 class JournalResource extends Resource
@@ -60,7 +61,7 @@ class JournalResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Section::make()
+                Components\Section::make()
                     ->components([
                         Forms\Components\DatePicker::make('date')
                             ->label(__('accounting::accounting.resources.journal.fields.date'))
@@ -80,7 +81,7 @@ class JournalResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make(__('accounting::accounting.resources.journal.sections.entries'))
+                Components\Section::make(__('accounting::accounting.resources.journal.sections.entries'))
                     ->components([
                         Forms\Components\Repeater::make('entries')
                             ->relationship()
@@ -182,13 +183,13 @@ class JournalResource extends Resource
                             ->when($data['date_to'], fn ($q, $date) => $q->whereDate('date', '<=', $date));
                     }),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                Actions\ViewAction::make(),
+                Actions\EditAction::make()
                     ->visible(fn (Journal $record): bool => $record->status === JournalStatus::Draft),
 
                 // Post action - only for draft journals
-                Tables\Actions\Action::make('post')
+                Actions\Action::make('post')
                     ->label(__('accounting::accounting.resources.journal.actions.post'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -197,13 +198,13 @@ class JournalResource extends Resource
                     ->action(fn (Journal $record) => $record->post()),
 
                 // Void action - requires reason
-                Tables\Actions\Action::make('void')
+                Actions\Action::make('void')
                     ->label(__('accounting::accounting.resources.journal.actions.void'))
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
                     ->visible(fn (Journal $record): bool => ! $record->status->isFinal())
-                    ->form([
+                    ->schema([
                         Forms\Components\Textarea::make('void_remarks')
                             ->label(__('accounting::accounting.resources.journal.fields.void_remarks'))
                             ->required()
@@ -215,10 +216,10 @@ class JournalResource extends Resource
                     }),
 
                 // Adjustment action - always available
-                Tables\Actions\Action::make('adjust')
+                Actions\Action::make('adjust')
                     ->label(__('accounting::accounting.resources.journal.actions.adjust'))
                     ->icon('heroicon-o-pencil-square')
-                    ->form([
+                    ->schema([
                         Forms\Components\Select::make('account_id')
                             ->label(__('accounting::accounting.resources.journal.fields.account'))
                             ->options(Account::leaf()->pluck('name', 'id'))
@@ -244,11 +245,11 @@ class JournalResource extends Resource
                     }),
 
                 // Create Transaction action - only when enabled
-                Tables\Actions\Action::make('create_transaction')
+                Actions\Action::make('create_transaction')
                     ->label(__('accounting::accounting.resources.journal.actions.create_transaction'))
                     ->icon('heroicon-o-arrow-trending-up')
                     ->visible(fn (): bool => static::isCreateTransactionEnabled())
-                    ->form([
+                    ->schema([
                         Forms\Components\Select::make('transaction_type')
                             ->label(__('accounting::accounting.resources.journal.fields.transaction_type'))
                             ->options([
@@ -281,11 +282,11 @@ class JournalResource extends Resource
                         $transaction->commit();
                     }),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
+                    Actions\ForceDeleteBulkAction::make(),
+                    Actions\RestoreBulkAction::make(),
                 ]),
             ]);
     }

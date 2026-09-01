@@ -2,6 +2,8 @@
 
 namespace AloongJerr\Accounting\Traits;
 
+use AloongJerr\Accounting\Accounting;
+
 /**
  * Provides configurable database connection for accounting models.
  *
@@ -16,7 +18,7 @@ trait HasAccountingConnection
      */
     public function getConnectionName(): ?string
     {
-        $connection = config('accounting.connection');
+        $connection = Accounting::config('connection');
 
         return $connection !== null ? $connection : parent::getConnectionName();
     }

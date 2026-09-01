@@ -6,15 +6,18 @@ use AloongJerr\Accounting\AccountingPlugin;
 use AloongJerr\Accounting\Reports\TrialBalance as TrialBalanceReport;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Concerns\RestrictsFileUploadsToSchemaComponents;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use UnitEnum;
 
-class TrialBalance extends Page implements HasForms
+class TrialBalance extends Page implements HasSchemas
 {
-    use InteractsWithForms;
+    use InteractsWithSchemas;
+    use RestrictsFileUploadsToSchemaComponents;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-table-cells';
 
@@ -23,6 +26,8 @@ class TrialBalance extends Page implements HasForms
     protected string $view = 'accounting::filament.pages.trial-balance';
 
     public ?string $date = null;
+
+    public ?array $data = [];
 
     public array $reportData = [];
 
@@ -61,10 +66,10 @@ class TrialBalance extends Page implements HasForms
         $this->generateReport();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Forms\Components\DatePicker::make('date')
                     ->label(__('accounting::accounting.reports.fields.as_of_date'))
                     ->required()
@@ -76,13 +81,14 @@ class TrialBalance extends Page implements HasForms
     public function generateReport(): void
     {
         $date = $this->form->getState()['date'] ?? now()->format('Y-m-d');
-        $report = new TrialBalanceReport($date);
+        $report = (new TrialBalanceReport())->asOf($date);
+        $summary = $report->summary();
 
         $this->reportData = [
-            'rows' => $report->getRows(),
-            'total_debit' => $report->getTotalDebit(),
-            'total_credit' => $report->getTotalCredit(),
-            'is_balanced' => $report->isBalanced(),
+            'rows' => $report->get(),
+            'total_debit' => $summary->total_debit,
+            'total_credit' => $summary->total_credit,
+            'is_balanced' => $summary->is_balanced,
             'date' => $date,
         ];
     }

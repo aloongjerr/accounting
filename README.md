@@ -32,12 +32,13 @@ composer require aloongjerr/accounting
 ```
 
 > [!IMPORTANT]
-> If you have not set up a custom theme, follow the [Filament Docs](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme) first.
+> This package requires a custom Filament theme. If you haven't set one up, follow the [Filament Custom Theme Guide](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme) first.
 
-Add the plugin's views to your theme CSS file:
+Import the package CSS into your theme file:
 
 ```css
-@source '../../../../vendor/aloongjerr/accounting/resources/**/*.blade.php';
+/* resources/css/filament/admin/theme.css */
+@import '../../../../../vendor/aloongjerr/accounting/resources/css/index.css';
 ```
 
 ### Quick Install (Recommended)

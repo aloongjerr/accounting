@@ -134,6 +134,60 @@ class BalanceSheet extends Report
     }
 
     /**
+     * Get balance sheet rows filtered to asset accounts only.
+     *
+     * @return Collection<int, \AloongJerr\Accounting\ValueObjects\ReportRow>
+     */
+    public function getAssetRows(): Collection
+    {
+        return $this->get()->filter(fn ($item) => $this->isAssetAccount($item))->values();
+    }
+
+    /**
+     * Get balance sheet rows filtered to liability accounts only.
+     *
+     * @return Collection<int, \AloongJerr\Accounting\ValueObjects\ReportRow>
+     */
+    public function getLiabilityRows(): Collection
+    {
+        return $this->get()->filter(fn ($item) => $this->isLiabilityAccount($item))->values();
+    }
+
+    /**
+     * Get balance sheet rows filtered to equity accounts only.
+     *
+     * @return Collection<int, \AloongJerr\Accounting\ValueObjects\ReportRow>
+     */
+    public function getEquityRows(): Collection
+    {
+        return $this->get()->filter(fn ($item) => $this->isEquityAccount($item))->values();
+    }
+
+    /**
+     * Get total assets amount.
+     */
+    public function getTotalAssets(): int
+    {
+        return $this->summary()->assets;
+    }
+
+    /**
+     * Get total liabilities amount.
+     */
+    public function getTotalLiabilities(): int
+    {
+        return $this->summary()->liabilities;
+    }
+
+    /**
+     * Get total equity amount (including retained earnings).
+     */
+    public function getTotalEquity(): int
+    {
+        return $this->summary()->equity;
+    }
+
+    /**
      * Check if an account is a balance sheet account.
      */
     protected function isBalanceSheetAccount(object $item): bool

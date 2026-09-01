@@ -212,14 +212,25 @@ return [
         'trial_balance' => [
             'title' => 'Imbangan Duga',
             'navigation_label' => 'Imbangan Duga',
+            'generate' => 'Jana Laporan',
+            'balanced' => 'Imbangan duga adalah seimbang.',
+            'unbalanced' => 'Imbangan duga TIDAK seimbang. Sila semak entri anda.',
         ],
         'income_statement' => [
             'title' => 'Penyata Pendapatan',
             'navigation_label' => 'Penyata Pendapatan',
+            'generate' => 'Jana Laporan',
+            'total_income' => 'Jumlah Pendapatan',
+            'total_expenses' => 'Jumlah Perbelanjaan',
+            'net_profit' => 'Keuntungan Bersih',
         ],
         'balance_sheet' => [
             'title' => 'Kunci Tara',
             'navigation_label' => 'Kunci Tara',
+            'generate' => 'Jana Laporan',
+            'total_assets' => 'Jumlah Aset',
+            'total_liabilities' => 'Jumlah Liabiliti',
+            'total_equity' => 'Jumlah Ekuiti',
         ],
         'aging' => [
             'title' => 'Laporan Hutang Lama',

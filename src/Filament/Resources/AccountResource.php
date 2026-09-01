@@ -7,12 +7,13 @@ use AloongJerr\Accounting\Enums\AccountSystemKey;
 use AloongJerr\Accounting\Enums\AccountType;
 use AloongJerr\Accounting\Filament\Resources\AccountResource\Pages;
 use AloongJerr\Accounting\Models\Account;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
 use UnitEnum;
 
 class AccountResource extends Resource
@@ -59,7 +60,7 @@ class AccountResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Section::make()
+                Section::make()
                     ->components([
                         Forms\Components\TextInput::make('code')
                             ->label(__('accounting::accounting.resources.account.fields.code'))
@@ -148,13 +149,13 @@ class AccountResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label(__('accounting::accounting.resources.account.fields.is_active')),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -179,16 +180,29 @@ class AccountResource extends Resource
     /**
      * Get system key options for the select field.
      * Combines default AccountSystemKey enum with any custom registered keys.
+     * Options are grouped by their root parent (Assets, Liabilities, etc.).
      */
     protected static function getSystemKeyOptions(): array
     {
         $options = [];
 
         foreach (AccountSystemKey::cases() as $case) {
-            $group = $case->getGroup()->getLabel();
-            $options[$group][$case->value] = $case->getLabel();
+            $group = self::getRootGroup($case);
+            $options[$group->getLabel()][$case->value] = $case->getLabel();
         }
 
         return $options;
+    }
+
+    /**
+     * Traverse up the parent chain to find the root group.
+     */
+    protected static function getRootGroup(AccountSystemKey $case): AccountSystemKey
+    {
+        while ($case->parentKey() !== null) {
+            $case = $case->parentKey();
+        }
+
+        return $case;
     }
 }

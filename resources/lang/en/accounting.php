@@ -212,14 +212,25 @@ return [
         'trial_balance' => [
             'title' => 'Trial Balance',
             'navigation_label' => 'Trial Balance',
+            'generate' => 'Generate Report',
+            'balanced' => 'Trial balance is balanced.',
+            'unbalanced' => 'Trial balance is NOT balanced. Please review your entries.',
         ],
         'income_statement' => [
             'title' => 'Income Statement',
             'navigation_label' => 'Income Statement',
+            'generate' => 'Generate Report',
+            'total_income' => 'Total Income',
+            'total_expenses' => 'Total Expenses',
+            'net_profit' => 'Net Profit',
         ],
         'balance_sheet' => [
             'title' => 'Balance Sheet',
             'navigation_label' => 'Balance Sheet',
+            'generate' => 'Generate Report',
+            'total_assets' => 'Total Assets',
+            'total_liabilities' => 'Total Liabilities',
+            'total_equity' => 'Total Equity',
         ],
         'aging' => [
             'title' => 'Aging Report',

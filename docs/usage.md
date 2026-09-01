@@ -49,6 +49,17 @@
 composer require aloongjerr/accounting
 ```
 
+### Custom Theme (Required)
+
+This package requires a custom Filament theme for proper styling. If you haven't set one up, follow the [Filament Custom Theme Guide](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme) first.
+
+Import the package CSS into your theme file:
+
+```css
+/* resources/css/filament/admin/theme.css */
+@import '../../../../../vendor/aloongjerr/accounting/resources/css/index.css';
+```
+
 ### Artisan Install Command
 
 The install command publishes config, migrations, runs migrations, and seeds the chart of accounts:

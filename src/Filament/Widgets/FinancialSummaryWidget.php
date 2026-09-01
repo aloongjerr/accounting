@@ -14,10 +14,7 @@ class FinancialSummaryWidget extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $report = new IncomeStatementReport(
-            now()->startOfYear()->format('Y-m-d'),
-            now()->format('Y-m-d')
-        );
+        $report = new IncomeStatementReport();
 
         $summary = $report->summary();
 
