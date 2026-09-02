@@ -178,3 +178,44 @@ it('returns resolver via getter', function () {
 
     expect($transaction->getResolver())->toBeInstanceOf(AccountResolver::class);
 });
+
+it('falls back to singleton tenant when not explicitly set', function () {
+    \AloongJerr\Accounting\Accounting::setTenant(42);
+
+    $transaction = createTestTransaction(1000);
+
+    expect($transaction->getTenantId())->toBe(42);
+
+    // Reset
+    \AloongJerr\Accounting\Accounting::setTenant(null);
+});
+
+it('explicit forTenant overrides singleton tenant', function () {
+    \AloongJerr\Accounting\Accounting::setTenant(10);
+
+    $transaction = createTestTransaction(1000)->forTenant(99);
+
+    expect($transaction->getTenantId())->toBe(99);
+
+    // Reset
+    \AloongJerr\Accounting\Accounting::setTenant(null);
+});
+
+it('returns null when no tenant set anywhere', function () {
+    \AloongJerr\Accounting\Accounting::setTenant(null);
+
+    $transaction = createTestTransaction(1000);
+
+    expect($transaction->getTenantId())->toBeNull();
+});
+
+it('uses singleton tenant in committed journal', function () {
+    \AloongJerr\Accounting\Accounting::setTenant(55);
+
+    $journal = createTestTransaction(5000)->commit();
+
+    expect($journal->tenant_id)->toBe(55);
+
+    // Reset
+    \AloongJerr\Accounting\Accounting::setTenant(null);
+});

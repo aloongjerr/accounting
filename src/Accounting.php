@@ -28,4 +28,20 @@ class Accounting {
         $callback($config);
         $config->apply();
     }
+
+    /**
+     * Set the current tenant for multi-tenancy.
+     */
+    public static function setTenant(?int $tenantId): void
+    {
+        app(AccountingConfiguration::class)->tenant($tenantId);
+    }
+
+    /**
+     * Get the current tenant ID.
+     */
+    public static function getTenant(): ?int
+    {
+        return app(AccountingConfiguration::class)->getTenant();
+    }
 }

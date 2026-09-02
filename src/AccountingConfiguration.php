@@ -36,6 +36,11 @@ class AccountingConfiguration
     protected ?Closure $scheduleCallback = null;
 
     /**
+     * Current tenant ID for multi-tenancy.
+     */
+    protected ?int $tenantId = null;
+
+    /**
      * Set the default currency.
      */
     public function currency(string $currency): self
@@ -122,6 +127,23 @@ class AccountingConfiguration
     public function getScheduleCallback(): ?Closure
     {
         return $this->scheduleCallback;
+    }
+
+    /**
+     * Set the current tenant for multi-tenancy.
+     */
+    public function tenant(?int $tenantId): self
+    {
+        $this->tenantId = $tenantId;
+        return $this;
+    }
+
+    /**
+     * Get the current tenant ID.
+     */
+    public function getTenant(): ?int
+    {
+        return $this->tenantId;
     }
 
     /**

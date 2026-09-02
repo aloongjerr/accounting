@@ -221,6 +221,69 @@ Accounting::reconciliationReport($reconciliationId)
     ->get();
 ```
 
+## Multi-Tenancy
+
+The package supports multi-tenant isolation via `tenant_id`. Each tenant has its own chart of accounts, journals, and reports.
+
+### Setting Current Tenant
+
+Use the singleton to set the current tenant (e.g., in middleware):
+
+```php
+use AloongJerr\Accounting\Facades\Accounting;
+
+// In middleware
+public function handle($request, Closure $next)
+{
+    $user = auth()->user();
+    Accounting::setTenant($user->tenant_id);
+    
+    return $next($request);
+}
+```
+
+### Using Tenant in Transactions
+
+Transactions automatically use the current tenant from the singleton:
+
+```php
+// Uses tenant from singleton (set in middleware)
+Accounting::received(50000, 'Payment')
+    ->from($customer)
+    ->toBank()
+    ->commit();
+```
+
+Override explicitly when needed:
+
+```php
+// Explicit tenant override
+Accounting::received(50000, 'Platform fee')
+    ->forTenant(null)  // Platform-level (no tenant)
+    ->commit();
+```
+
+### Getting Current Tenant
+
+```php
+$tenantId = Accounting::getTenant();
+```
+
+### Tenant-Scoped Reports
+
+```php
+// Report for current tenant (from singleton)
+Accounting::trialBalance()
+    ->asOf('2024-12-31')
+    ->get();
+
+// Report for specific tenant
+Accounting::trialBalance()
+    ->forTenant($tenantId)
+    ->asOf('2024-12-31')
+    ->get();
+```
+
 ## Configuration
 
 ### Config File

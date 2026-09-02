@@ -3,6 +3,7 @@
 namespace AloongJerr\Accounting\Transactions;
 
 use AloongJerr\Accounting\Accounting;
+use AloongJerr\Accounting\AccountingConfiguration;
 use AloongJerr\Accounting\Contracts\AccountingPipe;
 use AloongJerr\Accounting\Models\Journal;
 use AloongJerr\Accounting\Models\JournalEntry;
@@ -172,7 +173,7 @@ abstract class BaseTransaction
                 'reference_type' => $this->referenceType,
                 'reference_id' => $this->referenceId,
                 'status' => \AloongJerr\Accounting\Enums\JournalStatus::Draft,
-                'tenant_id' => $this->tenantId,
+                'tenant_id' => $this->getTenantId(),
                 'currency' => $this->resolveCurrency(),
                 'comments' => ! empty($this->comments) ? $this->comments : null,
             ]);
@@ -244,10 +245,16 @@ abstract class BaseTransaction
 
     /**
      * Get the tenant ID.
+     * Falls back to the singleton's tenant if not explicitly set.
      */
     public function getTenantId(): ?int
     {
-        return $this->tenantId;
+        if ($this->tenantId !== null) {
+            return $this->tenantId;
+        }
+
+        // Fall back to singleton's current tenant
+        return app(AccountingConfiguration::class)->getTenant();
     }
 
     /**

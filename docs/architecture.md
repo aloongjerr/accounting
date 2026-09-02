@@ -420,17 +420,51 @@ To correct a posted journal:
 
 All accounting tables include a `tenant_id` column for SaaS isolation.
 
-### Tenant Isolation
+### Singleton Tenant Context
+
+The package uses a singleton-based tenant context. Set the current tenant once (e.g., in middleware), and all transactions automatically use it:
 
 ```php
-// Transactions are scoped by tenant
+use AloongJerr\Accounting\Facades\Accounting;
+
+// Set current tenant (e.g., in middleware)
+Accounting::setTenant($user->tenant_id);
+
+// Get current tenant
+$tenantId = Accounting::getTenant();
+
+// Transactions auto-use the singleton's tenant
 Accounting::received(50000, 'Payment')
     ->from($customer)
     ->toBank()
-    ->tenantId($tenantId)
+    ->commit(); // Uses tenant from singleton
+```
+
+### Explicit Tenant Override
+
+Override the singleton tenant when needed:
+
+```php
+// Explicit tenant for a specific transaction
+Accounting::received(50000, 'Platform fee')
+    ->forTenant(null)  // Platform-level (no tenant)
     ->commit();
 
-// Reports filter by tenant
+// Or for a specific tenant
+Accounting::received(50000, 'Tenant payment')
+    ->forTenant($tenantId)
+    ->commit();
+```
+
+### Tenant-Scoped Reports
+
+```php
+// Reports use singleton tenant by default
+Accounting::trialBalance()
+    ->asOf('2024-12-31')
+    ->get();
+
+// Or specify tenant explicitly
 Accounting::trialBalance()
     ->forTenant($tenantId)
     ->asOf('2024-12-31')
@@ -440,12 +474,11 @@ Accounting::trialBalance()
 Journal::forTenant($tenantId)->get();
 ```
 
-### Tenant Configuration
+### Tenant Data Structure
 
-Tenants are stored in the `tenants` table with:
-- `id` - Unique tenant identifier
-- `name` - Tenant display name
-- `currency` - Tenant-specific currency (overrides default)
+Tenants can be any model in your application. The `tenant_id` column stores the ID:
+- `null` - Platform-level (no tenant)
+- `1`, `2`, `3`... - Specific tenant IDs
 
 ---
 
