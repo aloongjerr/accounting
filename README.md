@@ -38,7 +38,7 @@ Import the package CSS into your theme file:
 
 ```css
 /* resources/css/filament/admin/theme.css */
-@import '../../../../../vendor/aloongjerr/accounting/resources/css/index.css';
+@import '../../../../vendor/aloongjerr/accounting/**/*';
 ```
 
 ### Quick Install (Recommended)
@@ -52,9 +52,9 @@ This publishes config, migrations, runs migrations, and seeds the chart of accou
 ### Manual Install
 
 ```bash
+php artisan vendor:publish --tag="accounting-config"
 php artisan vendor:publish --tag="accounting-migrations"
 php artisan migrate
-php artisan vendor:publish --tag="accounting-config"
 php artisan db:seed --class="\AloongJerr\Accounting\Database\Seeders\ChartOfAccountsSeeder"
 ```
 
