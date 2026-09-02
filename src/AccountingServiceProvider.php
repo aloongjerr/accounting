@@ -3,6 +3,7 @@
 namespace AloongJerr\Accounting;
 
 use AloongJerr\Accounting\Commands\AccountingCommand;
+use AloongJerr\Accounting\Commands\AccountingInstallCommand;
 use AloongJerr\Accounting\Commands\GenerateSnapshotsCommand;
 use AloongJerr\Accounting\Contracts\HasAccountIdentity;
 use AloongJerr\Accounting\Database\Seeders\ChartOfAccountsSeeder;
@@ -15,7 +16,6 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Filesystem\Filesystem;
-use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -35,17 +35,19 @@ class AccountingServiceProvider extends PackageServiceProvider
          * More info: https://github.com/spatie/laravel-package-tools
          */
         $package->name(static::$name)
-            ->hasCommands($this->getCommands())
-            ->hasInstallCommand(function (InstallCommand $command) {
-                $command
-                    ->publishConfigFile()
-                    ->publishMigrations()
-                    ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub(static::$packageName)
-                    ->endWith(function () use ($command) {
-                        $command->call('db:seed', ['--class' => ChartOfAccountsSeeder::class]);
-                    });
+            ->hasCommands($this->getCommands());
+
+        // Configure the custom install command with --connection option
+        $installCommand = new AccountingInstallCommand($package);
+        $installCommand
+            ->publishConfigFile()
+            ->publishMigrations()
+            ->askToRunMigrations()
+            ->askToStarRepoOnGitHub(static::$packageName)
+            ->endWith(function () use ($installCommand) {
+                $installCommand->call('db:seed', ['--class' => ChartOfAccountsSeeder::class]);
             });
+        $package->consoleCommands[] = $installCommand;
 
         $configFileName = $package->shortName();
 

@@ -49,6 +49,15 @@ php artisan accounting:install
 
 This publishes config, migrations, runs migrations, and seeds the chart of accounts.
 
+You will be prompted to select the database connection. The default value is your app's default database connection. To specify directly:
+
+```bash
+php artisan accounting:install --connection=accounting
+```
+
+> [!NOTE]
+> All accounting migrations use the connection from `config('accounting.connection')`. If left empty, the app's default connection is used.
+
 ### Manual Install
 
 ```bash
@@ -343,6 +352,7 @@ public function boot(): void
 ```bash
 # Install: publish config, migrations, run migrations, seed chart of accounts
 php artisan accounting:install
+php artisan accounting:install --connection=accounting  # Use a specific connection
 
 # Generate snapshots
 php artisan accounting:generate-snapshots                    # Today
